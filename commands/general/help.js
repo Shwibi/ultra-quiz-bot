@@ -65,7 +65,7 @@ class Command extends Message.Event {
         }
 
         // Other info
-        helpEmbed.addField(`Other information`, `**Devs:** <@${this.config.Bot.devs.join(`>, <@`)}> \n[**Support Server**](https://discord.gg/aCyPF83e9C)`)
+        helpEmbed.addField(`Other information`, `**Devs:** <@${this.config.Bot.devs.join(`>, <@`)}> \n[**Invite**](https://discord.com/api/oauth2/authorize?client_id=870329762722238505&permissions=8&redirect_uri=https%3A%2F%2Fwww.discord.com%2Fapp&response_type=code&scope=bot%20messages.read)`)
 
         message.channel.send(helpEmbed);
 

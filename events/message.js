@@ -49,7 +49,7 @@ class Event extends Index.EntryPoint {
      * Call the event 
      * @param {Discord.Message} message
      */
-    call(message) {
+    async call(message) {
 
         if (!this.initiated) return new Err(`Called ${EventName} event without initialisation!`);
         if (!message) return new Err(`Called message event without a message!`);
@@ -60,6 +60,7 @@ class Event extends Index.EntryPoint {
         const args = msg.split(/\s/);
         if (this.config.Bot.devs.includes(message.author.id)) message.isDev = true
         else message.isDev = false;
+
 
         message.status = 'continue';
         // Search for prefix
@@ -76,6 +77,11 @@ class Event extends Index.EntryPoint {
         } else {
             message.prefix = global.prefixes.get(message.guild.id);
         }
+
+
+        // Help by ping
+        if (msg.includes(this.client.user.id)) message.reply(`Prefix is: \`${message.prefix}\`. You can use \`${message.prefix}help\` to look at help! :)`)
+
         // Permissions and pref
         let req = args.shift();
         if (!req.startsWith(message.prefix)) return;
