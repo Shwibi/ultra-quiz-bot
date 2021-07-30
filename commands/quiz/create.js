@@ -47,9 +47,7 @@ class Command extends Message.Event {
     quizDetails.name = args[0] ? args.join(" ") : "Quiz";
 
     message.channel.send(
-      `Creating a new quiz with the name **${quizDetails.name}**. Please select the format in which you will provide questions,` +
-      ` all in one message or one by one? Type \`all\` for all in one message, or type \`one\` for one by one. If you choose one by one` +
-      ` method, you can end the questions by typing \`end\` instead of your question. You have 20 seconds to choose, then this thread will close.`
+      `Creating a new quiz with the name **${quizDetails.name}**. Please type \`confirm\` to confirm. Type anything else to cancel. You have 20 seconds to choose, then this thread will close.`
     ).then(
       initialMessage => {
 
@@ -58,12 +56,12 @@ class Command extends Message.Event {
         initialCollector.on("collect", (messageCollected) => {
 
           const optForFormat = messageCollected.content.toLowerCase().trim();
-          if (optForFormat == "all") {
+          if (optForFormat == "confirm") {
             // All questions in a single message
-            initialMessage.edit(`You chose \`all\` in one. Please see the next message for more information.`);
+            initialMessage.edit(`You confirmed continuing. Please see the next message for more information.`);
             messageCollected.delete();
             message.channel.send(
-              `You chose \`all\`. Please send all the questions in this format example given below under 10 minutes: ` +
+              `❄ Creating quiz **${quizDetails.name}**. Please send all the questions in this format example given below in under 10 minutes: ` +
               `\`\`\`
                   EXAMPLE
 
@@ -78,9 +76,11 @@ class Command extends Message.Event {
                   -time 10
 
               \`\`\` `+
-              `\nIn this example, there are **two** questions. The string before \`-options\` represents the question. The string after \`-options\` and before \`~\``
+              `\nIn this example, there are **two** questions. The string before \`-options\` represents the question. The string after \`-options\` `
               +
-              `represents the options. In the options, \`--o <option\` represents a wrong answer, and \`--c <option>\` represents a correct answer.`
+              `represents the options. In the options, \`--o <option\` represents a wrong answer, and \`--c <option>\` represents a correct answer. The string after` +
+              ` \`-time\` represents the amount of time users should get to answer the question, in seconds.` +
+              `\n\nIf your message is over 2000 characters, please contact the dev to add the quiz manually, as discord does not support message with over 2000 characters.`
             ).then(waitingForQuestionsAllMessage => {
 
               const allQuestionsCollector = new Discord.MessageCollector(message.channel, receiveMsg => receiveMsg.member.id == message.author.id, { max: 1, time: 10 * 60 * 1000 });
@@ -92,13 +92,14 @@ class Command extends Message.Event {
                     if (err) {
                       try {
                         message.member.send(
-                          `Error: \n`, err, `\n\n Please let the dev know!`
+                          `❌ Error: \n`, err, `\n\n Please let the dev know!`
                         );
                       }
                       catch (error) {
                         this.InLog(error);
                       }
-                      message.reply(`There was an error generating quiz, please try again later!`);
+                      message.reply(`❌ There was an error generating quiz, please try again later!`);
+                      waitingForQuestionsAllMessage.delete();
                       return;
                     }
 
@@ -110,19 +111,29 @@ class Command extends Message.Event {
                     quizDetails: allQuestions,
                     name: quizDetails.name
                   })
+                  waitingForQuestionsAllMessage.delete();
                   message.channel.send(
-                    `
-                    
-                    Successfully parsed all the questions (${allQuestions.length}). The quiz id is ${quizId}. Please type \`${message.prefix}start ${quizId}\` to start this quiz.
-
-                    `
+                    `✅ Successfully parsed all the questions (${allQuestions.length}). The quiz id is ${quizId}. Please type \`${message.prefix}start ${quizId}\` to start this quiz.`
                   )
                 });
               })
 
+              allQuestionsCollector.on("end", (collected) => {
+                if (collected.size == 0) {
+                  waitingForQuestionsAllMessage.edit(`❌ Timed out and cancelled! Please try again!`);
+                }
+              })
+
             })
           }
+          else {
+            initialMessage.edit("Cancelled.");
+          }
 
+        })
+
+        initialCollector.on("end", (collected) => {
+          if (collected.size == 0) initialMessage.edit(`❌ Timed out and cancelled! Please try again!`);
         })
 
       }
