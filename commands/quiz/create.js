@@ -86,7 +86,7 @@ class Command extends Message.Event {
               const allQuestionsCollector = new Discord.MessageCollector(message.channel, receiveMsg => receiveMsg.member.id == message.author.id, { max: 1, time: 10 * 60 * 1000 });
 
               allQuestionsCollector.on("collect", async allQuestionsCollected => {
-                this.parseQuestions(allQuestionsCollected.content, async (allQuestions) => {
+                this.parseQuestions(allQuestionsCollected.content, allQuestionsCollected, async (allQuestions) => {
                   let quizId;
                   await QuizModel.estimatedDocumentCount({}, (err, count) => {
                     if (err) {
@@ -130,16 +130,17 @@ class Command extends Message.Event {
 
   }
 
-  parseQuestions(allQuestionsContent, callback = (allQuestions) => { }) {
+  parseQuestions(allQuestionsContent, message, callback = (allQuestions) => { }) {
     const allQuestions = [];
     //TODO
     this.InLog(allQuestionsContent);
     const toParseRaw = allQuestionsContent.toLowerCase();
-
+    if (!toParseRaw.includes(`-question`)) return message.channel.send(`Invalid format, please look at the example and try again!`);
     const questions = toParseRaw.split(`-question`);
     this.InLog({ questions });
     questions.forEach(question => {
       if (question.length == 0) return;
+      if (!question.includes(`-options`) || !question.includes(`--o`) || !question.includes(`--c`)) return message.channel.send(`Invalid format, please look at the example and try again!`);
       this.InLog({ question });
       const questionSegment = {};
       const theQuestion = question.substr(0, question.indexOf("-")).trim();
@@ -184,7 +185,7 @@ module.exports = {
   ignore: false,
   guildOnly: false,
   aliases: ["new"],
-  permissions: ['SEND_MESSAGES', 'ADMINISTRATOR', 'DEV'],
+  permissions: ['SEND_MESSAGES', 'DEV'],
   cooldown: 3,
   color: 'RANDOM',
   help: CommandName,

@@ -52,8 +52,8 @@ class Command extends Message.Event {
     message.channel.send(`The quiz **${quizName}** starts in 10 seconds.`).then(msg => {
       shwijs.Countdown(10, (err, timeElapsed, timeRemaining) => {
         if (err) return err.log();
-        if (timeRemaining % 5 == 0 || timeRemaining < 4) {
-          msg.edit(`The quiz **${quizName}** starts in ${timeRemaining} seconds.`)
+        if (timeRemaining < 4) {
+          if (timeRemaining !== 0) msg.edit(`The quiz **${quizName}** starts in ${timeRemaining} seconds.`)
         }
       }, () => {
         msg.delete();
@@ -72,8 +72,10 @@ class Command extends Message.Event {
     const q = qd[i];
     const QuestionEmbed = new Discord.MessageEmbed()
       .setTitle(`${i + 1}. ${q.question}.`)
-      .setDescription(`Send the correct number for your chosen option. You have ${q.time / 1000} seconds.`)
-      .setColor('RED');
+      .setDescription(`Send the correct number for your chosen option.`)
+      .setColor('RED')
+      .setFooter(`You have ${(q.time / 1000) || 30} seconds.`);
+
     const optVals = {};
     let correctAnswer;
     for (let o = 0; o < q.options.length; o++) {
@@ -86,7 +88,15 @@ class Command extends Message.Event {
 
     message.channel.send(QuestionEmbed).then(embedMsg => {
 
-      const collector = new Discord.MessageCollector(message.channel, msg => !msg.author.bot, { time: q.time });
+      shwijs.Countdown((q.time / 1000) || 30, (err, timeElapsed, timeRemaining) => {
+        if (err) return err.log();
+        const t = timeRemaining;
+        if (t < 4) embedMsg.edit(QuestionEmbed.setFooter(`You have ${timeRemaining} seconds.`));
+      }, () => {
+        embedMsg.edit(QuestionEmbed.setFooter("Question time ended."));
+      })
+
+      const collector = new Discord.MessageCollector(message.channel, msg => !msg.author.bot, { time: q.time || 30000 });
 
       collector.on("end", (collected) => {
         embedMsg.edit(QuestionEmbed.setColor('GREEN'));
@@ -115,7 +125,9 @@ class Command extends Message.Event {
         if (qd[i + 1]) {
           message.channel.send(`The next question comes in 5 seconds.`).then(msg => {
             shwijs.Countdown(5, (err, timeElapsed, timeRemaining) => {
-              msg.edit(`The next question comes in ${timeRemaining} seconds.`)
+              if (timeRemaining < 4) {
+                if (timeRemaining !== 0) msg.edit(`The next question comes in ${timeRemaining} seconds.`)
+              }
             }, () => {
               msg.delete();
             })
