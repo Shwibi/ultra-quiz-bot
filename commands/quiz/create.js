@@ -159,7 +159,7 @@ class Command extends Message.Event {
       questionSegment.question = theQuestion;
 
       const optsR = question.split("-options")[1];
-      const optsRI = optsR.indexOf("t");
+      const optsRI = optsR.lastIndexOf("-t");
       const optsEnd = optsRI > 0 ? optsRI - 1 : optsR.length;
       this.InLog({ optsRI, optsEnd, optsR });
       const opts = optsR.substr(0, optsEnd).trim();
