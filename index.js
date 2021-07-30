@@ -89,6 +89,12 @@ class EntryPoint extends Main {
 		}
 	}
 
+	SetStatus() {
+		if (this.client?.user) {
+			this.client.user.setActivity({ name: "You can do it!", type: "COMPETING" });
+		}
+	}
+
 	Test() { }
 }
 
@@ -97,5 +103,8 @@ const entryInstance = new EntryPoint();
 entryInstance.StartBot();
 entryInstance.ConnectMongoose();
 entryInstance.ConnectButton();
+setTimeout(() => {
+	entryInstance.SetStatus();
+}, 20000)
 
 module.exports = { EntryPoint, entryInstance, disbut: entryInstance.disbut };

@@ -65,8 +65,27 @@ class Command extends Message.Event {
         }
       }, () => {
         msg.delete();
-        this.askQuestion(id, qd, 0, message, () => {
-          message.channel.send(`The quiz **${quizName}** ended!`)
+        this.askQuestion(id, qd, 0, message, (globalBoard) => {
+          message.channel.send(`The quiz **${quizName}** ended!`);
+          this.InLog(globalBoard);
+          const sortedByTime = globalBoard.sort((a, b) => a.time - b.time);
+          const sortedByCorrect = sortedByTime.sort((a, b) => b.count - a.count);
+          this.InLog(sortedByCorrect);
+          const leaderBoardEmbed = new Discord.MessageEmbed()
+            .setTitle(`Leaderboard for quiz **${quizName}**`)
+            .setColor("RANDOM")
+            .setTimestamp();
+          const max = sortedByCorrect.length < 11 ? sortedByCorrect.length : 10;
+          for (let lbdU = 0; lbdU < max; lbdU++) {
+            const userId = sortedByCorrect[lbdU].userId;
+            const user = this.client.users.cache.find(u => u.id == userId) || message.guild.members.cache.find(u => u.id == userId);
+            leaderBoardEmbed.addField(`Rank ${lbdU + 1}. ${user.username}`, `<@${userId}> Correct: ${sortedByCorrect[lbdU].count} | Time: ${sortedByCorrect[lbdU].time / 1000} second(s)`);
+            if (lbdU == 0) {
+              leaderBoardEmbed.setThumbnail(user.avatarURL());
+            }
+          }
+          if (sortedByCorrect.length == 0) leaderBoardEmbed.addField(`Whooopsy!`, "Looks like no one got any questions in this quiz correct :(");
+          message.channel.send(leaderBoardEmbed);
         });
       })
     })
@@ -76,7 +95,7 @@ class Command extends Message.Event {
 
   }
 
-  askQuestion(quizId, qd, i, message, callbackOnEnd = () => { }) {
+  askQuestion(quizId, qd, i, message, callbackOnEnd = (leaderboard) => { }, globalBoard = []) {
     const q = qd[i];
     const QuestionEmbed = new Discord.MessageEmbed()
       .setTitle(`${i + 1}. ${q.question}.`)
@@ -109,13 +128,53 @@ class Command extends Message.Event {
     message.channel.send(QuestionEmbed, optButtonsRow).then(embedMsg => {
 
       let answeredUsers = [];
+      let localLeaderboard = [];
       let quizRunning = true;
+
+
+      this.client.on("clickButton", async (button) => {
+        const buttonArgs = button.id.split("-");
+        const answerDate = Date.now();
+        const ID = await button.clicker?.user?.id || button.clicker?.member?.id;
+
+        if (buttonArgs[0] == quizId && buttonArgs[1] == i + 1 && quizRunning) {
+
+          if (answeredUsers.includes(ID)) return await button.reply.send("Sneaky! You've already answered this question though ;)".true);
+          answeredUsers.push(ID);
+          if (buttonArgs[2] == correctIndex) {
+            await button.reply.send(`You got it right!`, true);
+
+            localLeaderboard.push({ userId: ID, time: answerDate - embedMsg.createdTimestamp, count: 1 });
+
+          }
+          else {
+            await button.reply.send(`Oops, you got it wrong! The correct answer was **${correctAnswer}**`, true);
+          }
+        }
+      })
+
       shwijs.Countdown((q.time / 1000) || 30, (err, timeElapsed, timeRemaining) => {
         if (err) return err.log();
         const t = timeRemaining;
         if (t < 4 || (t > 9 && t & 5 == 0)) embedMsg.edit(QuestionEmbed.setFooter(`You have ${timeRemaining} seconds.`), optButtonsRow);
       }, () => {
         quizRunning = false;
+        localLeaderboard.forEach(lb => {
+          let foundUserInGB = false;
+          for (let gb = 0; gb < globalBoard.length; gb++) {
+
+            if (lb.userId == globalBoard[gb].userId) {
+              globalBoard[gb].count = globalBoard[gb].count ? globalBoard[gb].count + 1 : 1;
+              globalBoard[gb].time = globalBoard[gb].time ? globalBoard[gb].time + lb.time : lb.time;
+              foundUserInGB = true;
+            }
+
+          }
+          if (!foundUserInGB) {
+            globalBoard.push(lb);
+          }
+        })
+
         embedMsg.edit(QuestionEmbed.setFooter("Question time ended.").setColor("GREEN").setDescription(`The correct answer was ${correctAnswer}`));
         if (qd[i + 1]) {
           message.channel.send(`Next question is coming in ${timeBetweenQuestions} seconds...`).then(waitNextMsg => {
@@ -123,33 +182,17 @@ class Command extends Message.Event {
             shwijs.Countdown(timeBetweenQuestions, (err, te, tr) => {
               if (tr < 4) waitNextMsg.edit(`Next question is coming in ${tr} seconds...`);
             }, () => {
-              this.askQuestion(quizId, qd, i + 1, message, callbackOnEnd);
+              this.askQuestion(quizId, qd, i + 1, message, callbackOnEnd, globalBoard);
             })
           })
 
         }
         else {
-          callbackOnEnd();
+          callbackOnEnd(globalBoard);
         }
       })
 
-      this.client.on("clickButton", async (button) => {
-        const buttonArgs = button.id.split("-");
 
-
-
-        if (buttonArgs[0] == quizId && buttonArgs[1] == i + 1 && quizRunning) {
-
-          if (answeredUsers.includes(button.clicker.user.id)) return await button.reply.send("Sneaky! You've already answered this question though ;)".true);
-
-          if (buttonArgs[2] == correctIndex) {
-            await button.reply.send(`You got it right!`, true);
-          }
-          else {
-            await button.reply.send(`Oops, you got it wrong! The correct answer was **${correctAnswer}**`, true);
-          }
-        }
-      })
 
 
 
