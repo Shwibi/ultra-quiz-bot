@@ -38,7 +38,7 @@ class Command extends Message.Event {
 
         const helpEmbed = new Discord.MessageEmbed()
             .setTitle(`Help is here!`)
-            .setDescription(`Here are all my commands!`)
+            .setDescription(`Here are all my commands! The prefix for the server is \`${message.prefix}\``)
             .setColor(`RANDOM`)
             .setTimestamp()
             .setFooter(`Requested by ${message.author.tag}`);

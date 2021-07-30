@@ -51,7 +51,10 @@ class Command extends Message.Event {
 
     message.channel.send(`The quiz **${quizName}** starts in 10 seconds.`).then(msg => {
       shwijs.Countdown(10, (err, timeElapsed, timeRemaining) => {
-        msg.edit(`The quiz **${quizName}** starts in ${timeRemaining} seconds.`)
+        if (err) return err.log();
+        if (timeRemaining % 5 == 0 || timeRemaining < 4) {
+          msg.edit(`The quiz **${quizName}** starts in ${timeRemaining} seconds.`)
+        }
       }, () => {
         msg.delete();
         this.askQuestion(qd, 0, message, (collected) => {
@@ -69,7 +72,7 @@ class Command extends Message.Event {
     const q = qd[i];
     const QuestionEmbed = new Discord.MessageEmbed()
       .setTitle(`${i + 1}. ${q.question}.`)
-      .setDescription(`Send the correct number for your chosen option. You have 30 seconds.`)
+      .setDescription(`Send the correct number for your chosen option. You have ${q.time / 1000} seconds.`)
       .setColor('RED');
     const optVals = {};
     let correctAnswer;
@@ -83,9 +86,10 @@ class Command extends Message.Event {
 
     message.channel.send(QuestionEmbed).then(embedMsg => {
 
-      const collector = new Discord.MessageCollector(message.channel, msg => !msg.author.bot, { time: 30000 });
+      const collector = new Discord.MessageCollector(message.channel, msg => !msg.author.bot, { time: q.time });
 
       collector.on("end", (collected) => {
+        embedMsg.edit(QuestionEmbed.setColor('GREEN'));
         message.channel.send(`**Question time ends for question number ${i + 1}**. The correct answer was **${correctAnswer}**`);
 
         let messagedUsers = [];
@@ -95,14 +99,16 @@ class Command extends Message.Event {
           messagedUsers.push(messageCollectedEach.member.id);
           try {
             if (messageCollectedEach.content.toLowerCase() == correctAnswer.substr(0, 1)) {
+              messageCollectedEach.react("✅");
               messageCollectedEach.member.send(`Yay! You got question number ${i + 1} right! Correct answer: ${correctAnswer}. Your answer: ${messageCollectedEach.content}`);
             }
             else {
-              messageCollectedEach.member.send(`Aww, you got it wrong! The correct answer was ${correctAnswer}`);
+              messageCollectedEach.react("❌")
+              messageCollectedEach.member.send(`Aww, you got question number ${i + 1} wrong! The correct answer was ${correctAnswer}. Your answer: ${messageCollectedEach.content}`);
             }
           }
           catch (err) {
-
+            if (err) this.InLog(err);
           }
         })
 
@@ -139,7 +145,7 @@ module.exports = {
   ignore: false,
   guildOnly: false,
   aliases: [],
-  permissions: ['SEND_MESSAGES', 'ADMINISTRATOR', 'DEV'],
+  permissions: ['SEND_MESSAGES', 'DEV'],
   cooldown: 3,
   color: 'RANDOM',
   help: CommandName,
