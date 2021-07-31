@@ -6,6 +6,7 @@ const mongoose = require(`mongoose`);
 const Message = require(`../../events/message`);
 const { Cache, Err, Main } = require(`../../utils/Utils`);
 const QuizModel = require("../../models/Quiz");
+const https = require("https");
 
 const CommandName = 'Create';
 
@@ -86,36 +87,61 @@ class Command extends Message.Event {
               const allQuestionsCollector = new Discord.MessageCollector(message.channel, receiveMsg => receiveMsg.member.id == message.author.id, { max: 1, time: 10 * 60 * 1000 });
 
               allQuestionsCollector.on("collect", async allQuestionsCollected => {
-                this.parseQuestions(allQuestionsCollected.content, allQuestionsCollected, async (allQuestions) => {
-                  let quizId;
-                  await QuizModel.estimatedDocumentCount({}, (err, count) => {
-                    if (err) {
-                      try {
-                        message.member.send(
-                          `❌ Error: \n`, err, `\n\n Please let the dev know!`
-                        );
-                      }
-                      catch (error) {
-                        this.InLog(error);
-                      }
-                      message.reply(`❌ There was an error generating quiz, please try again later!`);
-                      waitingForQuestionsAllMessage.delete();
-                      return;
-                    }
+                let toParse = allQuestionsCollected.content;
+                if (allQuestionsCollected.attachments.size !== 0) {
+                  const toRead = allQuestionsCollected.attachments.first().attachment;
+                  console.log(toRead);
+                  if (toRead) {
+                    https.get(toRead).on('response', function (response) {
+                      var body = '';
+                      var i = 0;
+                      response.on('data', function (chunk) {
+                        i++;
+                        body += chunk;
+                        console.log('BODY Part: ' + i);
+                      });
+                      response.on('end', function () {
 
-                    quizId = count;
+                        console.log(body);
+                        toParse = body;
+                        console.log('Finished');
+                      });
+                    });
+                  }
+                }
+                else toParse = allQuestionsCollected.content;
+                setTimeout(() => {
+                  this.parseQuestions(toParse, allQuestionsCollected, async (allQuestions) => {
+                    let quizId;
+                    await QuizModel.estimatedDocumentCount({}, (err, count) => {
+                      if (err) {
+                        try {
+                          message.member.send(
+                            `❌ Error: \n`, err, `\n\n Please let the dev know!`
+                          );
+                        }
+                        catch (error) {
+                          this.InLog(error);
+                        }
+                        message.reply(`❌ There was an error generating quiz, please try again later!`);
+                        waitingForQuestionsAllMessage.delete();
+                        return;
+                      }
+
+                      quizId = count;
+                    });
+                    quizId += 1;
+                    const quizDbInst = await QuizModel.create({
+                      quizId: quizId,
+                      quizDetails: allQuestions,
+                      name: quizDetails.name
+                    })
+                    waitingForQuestionsAllMessage.delete();
+                    message.channel.send(
+                      `✅ Successfully parsed all the questions (${allQuestions.length}). The quiz id is ${quizId}. Please type \`${message.prefix}start ${quizId}\` to start this quiz.`
+                    )
                   });
-                  quizId += 1;
-                  const quizDbInst = await QuizModel.create({
-                    quizId: quizId,
-                    quizDetails: allQuestions,
-                    name: quizDetails.name
-                  })
-                  waitingForQuestionsAllMessage.delete();
-                  message.channel.send(
-                    `✅ Successfully parsed all the questions (${allQuestions.length}). The quiz id is ${quizId}. Please type \`${message.prefix}start ${quizId}\` to start this quiz.`
-                  )
-                });
+                }, 3000)
               })
 
               allQuestionsCollector.on("end", (collected) => {
@@ -206,7 +232,7 @@ module.exports = {
   permissions: ['SEND_MESSAGES'],
   cooldown: 30,
   color: 'RANDOM',
-  extraFields: [{ name: "Maximum limit", value: "2000 characters set by discord" }, { name: "Expiry", value: "Never" }],
+  extraFields: [{ name: "Maximum limit", value: "No limit! You can even upload a text file if you want :)" }, { name: "Expiry", value: "Never" }],
   help: "To create a new quiz, please use the command \`<prefix>create [name of quiz]\`, then follow this format for questions: \n\`\`\`-question <Your question here> \n-options --o <wrong option> --o <wrong option> --c <correct option> \n-time <Time in seconds>\`\`\`You need at least a question, and one wrong option and a correct option. The time defaults to 10 seconds. It is compulsary to write time AFTER writing options. You need to add new lines after each argument, exactly like in the example. \nYou can add as many options as you want.",
   call: async (message, client) => {
     if (!instance.initiated) instance.init(client);
