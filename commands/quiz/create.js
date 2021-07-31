@@ -141,11 +141,12 @@ class Command extends Message.Event {
 
   }
 
-  parseQuestions(allQuestionsContent, message, callback = (allQuestions) => { }) {
+  parseQuestions(allQuestionsContent, message, callback = (allQuestions) => { }, lowerCase = false) {
     const allQuestions = [];
     //TODO
     this.InLog(allQuestionsContent);
-    const toParseRaw = allQuestionsContent.toLowerCase();
+    let toParseRaw = allQuestionsContent;
+    if (lowerCase) toParseRaw = allQuestionsContent.toLowerCase();
     if (!toParseRaw.includes(`-question`)) {
       this.InLog("WRONG", toParseRaw);
       message.channel.send(`Invalid format, please look at the example and try again!`)

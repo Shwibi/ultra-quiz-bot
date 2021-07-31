@@ -98,7 +98,7 @@ class Command extends Message.Event {
   askQuestion(quizId, qd, i, message, callbackOnEnd = (leaderboard) => { }, globalBoard = []) {
     const q = qd[i];
     const QuestionEmbed = new Discord.MessageEmbed()
-      .setTitle(`${i + 1}. ${q.question}.`)
+      .setTitle(`${i + 1}. ${q.question}`)
       .setDescription(`Click on the button that you think is the best answer!`)
       .setColor('RED')
       .setFooter(`You have ${(q.time / 1000) || 30} seconds.`);
@@ -116,7 +116,7 @@ class Command extends Message.Event {
 
     }
     for (const key in optVals) {
-      QuestionEmbed.addField(key, optVals[key].name)
+      // QuestionEmbed.addField(key, optVals[key].name)
       let optBut = new this.disbut.MessageButton()
         .setLabel(optVals[key].name)
         .setID(`${quizId}-${i + 1}-${key}`)
