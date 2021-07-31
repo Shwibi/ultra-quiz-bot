@@ -200,7 +200,7 @@ module.exports = {
   cooldown: 30,
   color: 'RANDOM',
   extraFields: [{ name: "Maximum limit", value: "2000 characters set by discord" }, { name: "Expiry", value: "Never" }],
-  help: "To create a new quiz, please use the command \`<prefix>create [name of quiz]\`, then follow this format for questions: \n\`\`\`-question <Your question here> \n-options --o <wrong option> --o <wrong option> --c <correct option> \n-time <Time in seconds>\`\`\`You need at least a question, and one wrong option and a correct option. The time defaults to 10 seconds. It is compulsary to write time AFTER writing options. You don't need to add new lines after each argument, but you need spaces. \nYou can add as many options as you want.",
+  help: "To create a new quiz, please use the command \`<prefix>create [name of quiz]\`, then follow this format for questions: \n\`\`\`-question <Your question here> \n-options --o <wrong option> --o <wrong option> --c <correct option> \n-time <Time in seconds>\`\`\`You need at least a question, and one wrong option and a correct option. The time defaults to 10 seconds. It is compulsary to write time AFTER writing options. You need to add new lines after each argument, exactly like in the example. \nYou can add as many options as you want.",
   call: async (message, client) => {
     if (!instance.initiated) instance.init(client);
     instance.call(message);
