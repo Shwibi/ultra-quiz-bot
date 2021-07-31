@@ -204,5 +204,6 @@ module.exports = {
   call: async (message, client) => {
     if (!instance.initiated) instance.init(client);
     instance.call(message);
-  }
+  },
+  instance
 }
