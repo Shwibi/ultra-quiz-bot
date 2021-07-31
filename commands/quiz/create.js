@@ -146,12 +146,18 @@ class Command extends Message.Event {
     //TODO
     this.InLog(allQuestionsContent);
     const toParseRaw = allQuestionsContent.toLowerCase();
-    if (!toParseRaw.includes(`-question`)) return message.channel.send(`Invalid format, please look at the example and try again!`);
+    if (!toParseRaw.includes(`-question`)) {
+      this.InLog("WRONG", toParseRaw);
+      message.channel.send(`Invalid format, please look at the example and try again!`)
+    };
     const questions = toParseRaw.split(`-question`);
     this.InLog({ questions });
     questions.forEach(question => {
       if (question.length == 0) return;
-      if (!question.includes(`-options`) || !question.includes(`--o`) || !question.includes(`--c`)) return message.channel.send(`Invalid format, please look at the example and try again!`);
+      if (!question.includes(`-options`) || !question.includes(`--o`) || !question.includes(`--c`)) {
+        message.channel.send(`Invalid format, please look at the example and try again!`)
+        this.InLog("WRONG", question);
+      };
       this.InLog({ question });
       const questionSegment = {};
       const theQuestion = question.substr(0, question.indexOf("-")).trim();

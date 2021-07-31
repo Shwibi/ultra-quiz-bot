@@ -7,7 +7,7 @@ const Message = require(`../../events/message`);
 const { Cache, Err, Main } = require(`../../utils/Utils`);
 const quiz = require("../../store/quiz.json");
 const quizCommand = require("./create");
-
+const QuizModel = require("../../models/Quiz");
 const CommandName = 'Load';
 
 class Command extends Message.Event {
@@ -77,7 +77,7 @@ class Command extends Message.Event {
         name: name
       })
 
-      message.reply(`Successfully loaded ${name} quiz; ID: ${quizId}; DB: `, quizDbInst);
+      message.reply(`Successfully loaded ${name} quiz; Total: ${allQuestions.length} ID: ${quizId};`);
 
     })
   }
