@@ -4,8 +4,9 @@ const Index = require(`../../index`);
 const fs = require(`fs`);
 const mongoose = require(`mongoose`);
 const Message = require(`../../events/message`);
-const { Cache, Err, Main, LoadQuiz } = require(`../../utils/Utils`);
-
+const { Cache, Err, Main } = require(`../../utils/Utils`);
+const quiz = require("../../store/quiz.json");
+const quizCommand = require("./create");
 
 const CommandName = 'Load';
 
@@ -40,10 +41,49 @@ class Command extends Message.Event {
     const commandRaw = args.shift();
     if (args[0]) {
       const nameToGet = args.join(" ");
-      LoadQuiz(nameToGet, message);
+      this.LoadQuiz(nameToGet, message);
 
     }
 
+  }
+
+  async LoadQuiz(name, message = messageR) {
+    const quizDetails = quiz[name];
+    if (!quizDetails) return message.reply(`No such quiz found!`);
+    quizCommand.instance.parseQuestions(quizDetails, message, async (allQuestions) => {
+      let quizId;
+      await QuizModel.estimatedDocumentCount({}, (err, count) => {
+        if (err) {
+          try {
+            message.reply(
+              `❌ Error: \n`, err, `\n\n Please let the dev know!`
+            );
+
+          }
+          catch (error) {
+            this.Err(error);
+          }
+          message.reply(`❌ There was an error generating quiz, please try again later!`);
+
+          return;
+        }
+
+        quizId = count;
+      });
+      quizId += 1;
+      const quizDbInst = await QuizModel.create({
+        quizId: quizId,
+        quizDetails: allQuestions,
+        name: name
+      })
+
+      message.reply(`Successfully loaded ${name} quiz; ID: ${quizId}; DB: `, quizDbInst);
+
+    })
+  }
+
+  Err(error) {
+    console.log(`[ERROR/LoadQuiz]`, error)
   }
 }
 
