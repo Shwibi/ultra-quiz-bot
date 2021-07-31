@@ -257,8 +257,8 @@ module.exports = {
   ignore: false,
   guildOnly: false,
   aliases: [],
-  permissions: ['SEND_MESSAGES', 'DEV'],
-  cooldown: 3,
+  permissions: ['SEND_MESSAGES'],
+  cooldown: 25,
   color: 'RANDOM',
   help: CommandName,
   call: async (message, client) => {
