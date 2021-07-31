@@ -9,7 +9,7 @@ const messageR = new Discord.Message();
 async function LoadQuiz(name, message = messageR) {
   const quizDetails = quiz[name];
   if (!quizDetails) return message.reply(`No such quiz found!`);
-  quizCommand.instance.parseQuestions(quizDetails, message, (allQuestions) => {
+  quizCommand.instance.parseQuestions(quizDetails, message, async (allQuestions) => {
     let quizId;
     await QuizModel.estimatedDocumentCount({}, (err, count) => {
       if (err) {
