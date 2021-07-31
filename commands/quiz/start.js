@@ -158,7 +158,8 @@ class Command extends Message.Event {
       shwijs.Countdown((q.time / 1000) || 30, (err, timeElapsed, timeRemaining) => {
         if (err) return err.log();
         const t = timeRemaining;
-        if (t < 4 || (t > 9 && t & 5 == 0)) embedMsg.edit(QuestionEmbed.setFooter(`You have ${timeRemaining} seconds.`), optButtonsRow);
+        const isMod5 = t % 5 == 0 ? t > 9 ? true : false : false;
+        if (t < 4 || isMod5) embedMsg.edit(QuestionEmbed.setFooter(`You have ${timeRemaining} seconds.`), optButtonsRow);
       }, () => {
         quizRunning = false;
         localLeaderboard.forEach(lb => {
