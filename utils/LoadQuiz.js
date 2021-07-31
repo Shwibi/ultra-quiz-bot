@@ -6,7 +6,7 @@ const QuizModel = require("../models/Quiz");
 
 const messageR = new Discord.Message();
 
-function LoadQuiz(name, message = messageR) {
+async function LoadQuiz(name, message = messageR) {
   const quizDetails = quiz[name];
   if (!quizDetails) return message.reply(`No such quiz found!`);
   quizCommand.instance.parseQuestions(quizDetails, message, (allQuestions) => {
