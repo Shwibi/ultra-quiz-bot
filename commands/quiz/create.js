@@ -68,18 +68,18 @@ class Command extends Message.Event {
 
 
                   -question What is 1 + 1 equal to?
-                  -options --o 1 --c 2 --o 3 --o 4
+                  -options +o 1 +c 2 +o 3 +o 4
                   -time 20
 
 
                   -question What is 2 x 5?
-                  -options --o 7 --o 3 --c 10 --o 2.5
+                  -options +o 7 +o 3 +c 10 +o 2.5
                   -time 10
 
               \`\`\` `+
               `\nIn this example, there are **two** questions. The string before \`-options\` represents the question. The string after \`-options\` `
               +
-              `represents the options. In the options, \`--o <option\` represents a wrong answer, and \`--c <option>\` represents a correct answer. The string after` +
+              `represents the options. In the options, \`+o <option\` represents a wrong answer, and \`+c <option>\` represents a correct answer. The string after` +
               ` \`-time\` represents the amount of time users should get to answer the question, in seconds.` +
               `\n\nIf your message is over 2000 characters, please contact the dev to add the quiz manually, as discord does not support message with over 2000 characters.`
             ).then(waitingForQuestionsAllMessage => {
@@ -181,7 +181,7 @@ class Command extends Message.Event {
     this.InLog({ questions });
     questions.forEach(question => {
       if (question.length == 0) return;
-      if (!question.includes(`-options`) || !question.includes(`--o`) || !question.includes(`--c`)) {
+      if (!question.includes(`-options`) || !question.includes(`+o`) || !question.includes(`+c`)) {
         message.channel.send(`Invalid format, please look at the example and try again!`)
         this.InLog("WRONG", question);
       };
@@ -196,7 +196,7 @@ class Command extends Message.Event {
       const optsEnd = optsRI > 0 ? optsRI - 1 : optsR.length;
       this.InLog({ optsRI, optsEnd, optsR });
       const opts = optsR.substr(0, optsEnd).trim();
-      const options = opts.split(/--/).slice(1);
+      const options = opts.split(/\+/).slice(1);
       questionSegment.options = [];
       this.InLog({ opts, options });
       options.forEach(option => {
@@ -233,7 +233,7 @@ module.exports = {
   cooldown: 30,
   color: 'RANDOM',
   extraFields: [{ name: "Maximum limit", value: "No limit! You can even upload a text file if you want :)" }, { name: "Expiry", value: "Never" }],
-  help: "To create a new quiz, please use the command \`<prefix>create [name of quiz]\`, then follow this format for questions: \n\`\`\`-question <Your question here> \n-options --o <wrong option> --o <wrong option> --c <correct option> \n-time <Time in seconds>\`\`\`You need at least a question, and one wrong option and a correct option. The time defaults to 10 seconds. It is compulsary to write time AFTER writing options. You need to add new lines after each argument, exactly like in the example. \nYou can add as many options as you want.",
+  help: "To create a new quiz, please use the command \`<prefix>create [name of quiz]\`, then follow this format for questions: \n\`\`\`-question <Your question here> \n-options +o <wrong option> +o <wrong option> +c <correct option> \n-time <Time in seconds>\`\`\`You need at least a question, and one wrong option and a correct option. The time defaults to 10 seconds. It is compulsary to write time AFTER writing options. You need to add new lines after each argument, exactly like in the example. \nYou can add as many options as you want.",
   call: async (message, client) => {
     if (!instance.initiated) instance.init(client);
     instance.call(message);
