@@ -30,6 +30,7 @@ class Command extends Message.Event {
     this.client = client;
     this.initiated = true;
     this.disbut = Index.disbut;
+    this.needToStop = false;
   }
 
   /**
@@ -64,6 +65,7 @@ class Command extends Message.Event {
           if (timeRemaining !== 0) msg.edit(`The quiz **${quizName}** starts in ${timeRemaining} seconds.`)
         }
       }, () => {
+        this.needToStop = false;
         msg.delete();
         this.askQuestion(id, qd, 0, message, (globalBoard) => {
           message.channel.send(`The quiz **${quizName}** ended!`);
@@ -176,7 +178,7 @@ class Command extends Message.Event {
         })
 
         embedMsg.edit(QuestionEmbed.setFooter("Question time ended.").setColor("GREEN").setDescription(`The correct answer was ${correctAnswer}`));
-        if (qd[i + 1]) {
+        if (qd[i + 1] && !this.needToStop) {
           message.channel.send(`Next question is coming in ${timeBetweenQuestions} seconds...`).then(waitNextMsg => {
             // this.askQuestion(quizId, qd, i + 1, message, callbackOnEnd);
             shwijs.Countdown(timeBetweenQuestions, (err, te, tr) => {
@@ -264,5 +266,6 @@ module.exports = {
   call: async (message, client) => {
     if (!instance.initiated) instance.init(client);
     instance.call(message);
-  }
+  },
+  instance
 }
