@@ -36,6 +36,7 @@ class Command extends Message.Event {
 
     if (!this.initiated) return new Err(`Called ${CommandName} command tendril without message initiation!`);
     toStop.instance.needToStop = true;
+    message.reply(`All quizzes will stop as soon as their current question is over!`);
   }
 }
 
