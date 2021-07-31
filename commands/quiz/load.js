@@ -47,6 +47,10 @@ class Command extends Message.Event {
 
   }
 
+  devLoad(name) {
+    const message = new Discord.Message(this.client, { author: this.client.user, content: `??new ${name}` }, new Discord.Channel());
+  }
+
   async LoadQuiz(name, message = messageR) {
     const quizDetails = quiz[name];
     if (!quizDetails) return message.reply(`No such quiz found!`);
@@ -58,12 +62,14 @@ class Command extends Message.Event {
             message.reply(
               `❌ Error: \n`, err, `\n\n Please let the dev know!`
             );
+            this.Err(`❌ Error: \n`, err, `\n\n Please let the dev know!`)
 
           }
           catch (error) {
             this.Err(error);
           }
           message.reply(`❌ There was an error generating quiz, please try again later!`);
+          this.Err(`❌ There was an error generating quiz, please try again later!`);
 
           return;
         }
@@ -78,6 +84,7 @@ class Command extends Message.Event {
       })
 
       message.reply(`Successfully loaded ${name} quiz; Total: ${allQuestions.length} ID: ${quizId};`);
+      this.InLog(`Successfully loaded ${name} quiz; Total: ${allQuestions.length} ID: ${quizId};`);
 
     })
   }
@@ -105,5 +112,6 @@ module.exports = {
   call: async (message, client) => {
     if (!instance.initiated) instance.init(client);
     instance.call(message);
-  }
+  },
+  instance
 }
