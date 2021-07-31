@@ -252,15 +252,15 @@ const instance = new Command();
 // Exports
 module.exports = {
   name: CommandName.toLowerCase(),
-  description: CommandName,
+  description: "Start a quiz!",
   useName: CommandName,
   ignore: false,
-  guildOnly: false,
-  aliases: [],
+  guildOnly: true,
+  aliases: ["begin"],
   permissions: ['SEND_MESSAGES'],
   cooldown: 25,
-  color: 'RANDOM',
-  help: CommandName,
+  color: 'ORANGE',
+  help: "Start a new quiz using the quiz ID you got after creating the quiz. Format: \`<prefix>start <id>\`",
   call: async (message, client) => {
     if (!instance.initiated) instance.init(client);
     instance.call(message);
