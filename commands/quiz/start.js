@@ -30,7 +30,8 @@ class Command extends Message.Event {
     this.client = client;
     this.initiated = true;
     this.disbut = Index.disbut;
-    this.needToStop = false;
+    this.needToStop = {};
+    this.running = [];
   }
 
   /**
@@ -45,6 +46,8 @@ class Command extends Message.Event {
     const args = lowerCaseMsg.split(/\s/);
     const commandRaw = args.shift();
 
+    if (this.running.includes(message.channel.id)) return message.reply(`There is already a quiz going on in this channel! Please wait until it is over, and then retry!`);
+
     let startsIn = 10;
     if (args[1]) {
       if (shwijs.IsInteger(parseInt(args[1]))) startsIn = parseInt(args[1]);
@@ -52,6 +55,8 @@ class Command extends Message.Event {
 
     const id = args[0];
     if (!id) return message.reply(`Please provide the id of the quiz to start!`);
+
+
 
     const quizFromDb = await QuizModel.find({ quizId: id });
     if (!quizFromDb || !quizFromDb[0]?.quizDetails) return message.reply(`There exists no such quiz!`);
@@ -65,9 +70,13 @@ class Command extends Message.Event {
           if (timeRemaining !== 0) msg.edit(`The quiz **${quizName}** starts in ${timeRemaining} seconds.`)
         }
       }, () => {
-        this.needToStop = false;
+        this.needToStop[message.channel.id] = false;
+        this.running.push(message.channel.id);
+
+
         msg.delete();
         this.askQuestion(id, qd, 0, message, (globalBoard) => {
+          this.running = this.running.filter(eachChannel => eachChannel !== message.channel.id);
           message.channel.send(`The quiz **${quizName}** ended!`);
           this.InLog(globalBoard);
           const sortedByTime = globalBoard.sort((a, b) => a.time - b.time);
@@ -185,7 +194,7 @@ class Command extends Message.Event {
         })
 
         embedMsg.edit(QuestionEmbed.setFooter("Question time ended.").setColor("GREEN").setDescription(`The correct answer was ${correctAnswer}`));
-        if (qd[i + 1] && !this.needToStop) {
+        if (qd[i + 1] && !this.needToStop[message.channel.id]) {
 
           // this.askQuestion(quizId, qd, i + 1, message, callbackOnEnd);
           shwijs.Countdown(timeBetweenQuestions, (err, te, tr) => {
