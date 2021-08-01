@@ -82,7 +82,7 @@ class Command extends Message.Event {
           sortedByCorrect.forEach(userInBoard => {
             const userId = userInBoard.userId;
             const user = this.client.users.cache.find(u => u.id == userId) || message.guild.members.cache.find(u => u.id == userId);
-            user.send(`Quiz **${quizName}** over! You got ${userInBoard.count} questions correct in time ${userInBoard.time} seconds!`)
+            user.send(`Quiz **${quizName}** over! You got ${userInBoard.count} questions correct in time ${userInBoard.time / 1000} seconds!`)
           })
           for (let lbdU = 0; lbdU < max; lbdU++) {
             const userId = sortedByCorrect[lbdU].userId;
