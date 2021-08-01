@@ -7,6 +7,7 @@ const mongoose = require(`mongoose`);
 const Message = require(`../../events/message`);
 const { Cache, Err, Main } = require(`../../utils/Utils`);
 const QuizModel = require("../../models/Quiz");
+const Guilds = require("../../models/Guilds");
 
 const timeBetweenQuestions = 5;
 
@@ -53,6 +54,9 @@ class Command extends Message.Event {
       if (shwijs.IsInteger(parseInt(args[1]))) startsIn = parseInt(args[1]);
     }
 
+    let pushToGB = true;
+    if (args[2] && args[2] == "false") pushToGB = false;
+
     const id = args[0];
     if (!id) return message.reply(`Please provide the id of the quiz to start!`);
 
@@ -63,25 +67,63 @@ class Command extends Message.Event {
     const quizName = quizFromDb[0]?.name || "Quiz";
     const qd = quizFromDb[0].quizDetails;
 
+    const guildDB = await Guilds.findOne({ guildId: message.guild.id });
+    if (!guildDB) return message.channel.send(`Something went wrong! Please try again!`);
+    this.banList = await guildDB.get("bannedUsers");
+    if (this.banList.includes(message.author.id)) return message.delete();
+
+
     message.channel.send(`The quiz **${quizName}** starts in ${startsIn} seconds.`).then(msg => {
       shwijs.Countdown(startsIn, (err, timeElapsed, timeRemaining) => {
         if (err) return err.log();
         if (timeRemaining < 4) {
           if (timeRemaining !== 0) msg.edit(`The quiz **${quizName}** starts in ${timeRemaining} seconds.`)
         }
-      }, () => {
+      }, async () => {
         this.needToStop[message.channel.id] = false;
         this.running.push(message.channel.id);
 
 
         msg.delete();
-        this.askQuestion(id, qd, 0, message, (globalBoard) => {
+        this.askQuestion(id, qd, 0, message, async (globalBoard) => {
           this.running = this.running.filter(eachChannel => eachChannel !== message.channel.id);
           message.channel.send(`The quiz **${quizName}** ended!`);
           this.InLog(globalBoard);
           const sortedByTime = globalBoard.sort((a, b) => a.time - b.time);
           const sortedByCorrect = sortedByTime.sort((a, b) => b.count - a.count);
+
           this.InLog(sortedByCorrect);
+
+          if (pushToGB) {
+            // overall leaderboard
+            let guildBoard = await guildDB.get("leaderboard") || [];
+            // guildBoard.push(...sortedByCorrect);
+            guildBoard = this.pushBoard(sortedByCorrect, guildBoard);
+            const GBsortedByTime = guildBoard.sort((a, b) => a.time - b.time);
+            const GBsortedByCorrect = GBsortedByTime.sort((a, b) => b.count - a.count);
+            await guildDB.updateOne({
+              leaderboard: GBsortedByCorrect
+            })
+            if (args[3] && args[3] == "dm") {
+              const dmEmbed = new Discord.MessageEmbed()
+                .setTitle("Guild board")
+                .setColor("RANDOM")
+                .setTimestamp()
+                .setFooter(`Total users: ${GBsortedByCorrect.length}`);
+              const maxGB = GBsortedByCorrect.length < 11 ? sortedByCorrect.length : 10;
+              for (let lbgGB = 0; lbgGB < maxGB; lbgGB++) {
+                const userId = GBsortedByCorrect[lbgGB].userId;
+                const user = this.client.users.cache.find(u => u.id == userId) || message.guild.members.cache.find(u => u.id == userId);
+                dmEmbed.addField(`Rank ${lbgGB + 1}. ${user.username}`, `<@${userId}> Correct: ${GBsortedByCorrect[lbgGB].count} | Time: ${GBsortedByCorrect[lbgGB].time / 1000} second(s)`);
+                if (lbgGB == 0) {
+                  dmEmbed.setThumbnail(user.avatarURL());
+                }
+              }
+              message.member.send(dmEmbed);
+            }
+          }
+
+
           const leaderBoardEmbed = new Discord.MessageEmbed()
             .setTitle(`Leaderboard for quiz **${quizName}**`)
             .setColor("RANDOM")
@@ -93,6 +135,9 @@ class Command extends Message.Event {
             const user = this.client.users.cache.find(u => u.id == userId) || message.guild.members.cache.find(u => u.id == userId);
             user.send(`Quiz **${quizName}** over! You got ${userInBoard.count} questions correct in time ${userInBoard.time / 1000} seconds!`)
           })
+
+
+
           for (let lbdU = 0; lbdU < max; lbdU++) {
             const userId = sortedByCorrect[lbdU].userId;
             const user = this.client.users.cache.find(u => u.id == userId) || message.guild.members.cache.find(u => u.id == userId);
@@ -153,10 +198,14 @@ class Command extends Message.Event {
         const buttonArgs = button.id.split("-");
         const answerDate = Date.now();
         const ID = await button.clicker?.user?.id || button.clicker?.member?.id;
+        if (this.banList.includes(ID)) {
+          await button.reply.send("You are not allowed to answer quizzes!");
+          return;
+        }
 
         if (buttonArgs[0] == quizId && buttonArgs[1] == i + 1 && quizRunning) {
 
-          if (answeredUsers.includes(ID)) return await button.reply.send("Sneaky! You've already answered this question though ;)".true);
+          if (answeredUsers.includes(ID)) return await button.reply.send("Sneaky! You've already answered this question though ;)", true);
           answeredUsers.push(ID);
           if (buttonArgs[2] == correctIndex) {
             await button.reply.send(`You got it right!`, true);
@@ -177,21 +226,22 @@ class Command extends Message.Event {
         if (t < 4 || isMod5) embedMsg.edit(QuestionEmbed.setFooter(`You have ${timeRemaining} seconds.`), optButtonsRow);
       }, () => {
         quizRunning = false;
-        localLeaderboard.forEach(lb => {
-          let foundUserInGB = false;
-          for (let gb = 0; gb < globalBoard.length; gb++) {
+        // localLeaderboard.forEach(lb => {
+        //   let foundUserInGB = false;
+        //   for (let gb = 0; gb < globalBoard.length; gb++) {
 
-            if (lb.userId == globalBoard[gb].userId) {
-              globalBoard[gb].count = globalBoard[gb].count ? globalBoard[gb].count + 1 : 1;
-              globalBoard[gb].time = globalBoard[gb].time ? globalBoard[gb].time + lb.time : lb.time;
-              foundUserInGB = true;
-            }
+        //     if (lb.userId == globalBoard[gb].userId) {
+        //       globalBoard[gb].count = globalBoard[gb].count ? globalBoard[gb].count + 1 : 1;
+        //       globalBoard[gb].time = globalBoard[gb].time ? globalBoard[gb].time + lb.time : lb.time;
+        //       foundUserInGB = true;
+        //     }
 
-          }
-          if (!foundUserInGB) {
-            globalBoard.push(lb);
-          }
-        })
+        //   }
+        //   if (!foundUserInGB) {
+        //     globalBoard.push(lb);
+        //   }
+        // })
+        globalBoard = this.pushBoard(localLeaderboard, globalBoard);
 
         embedMsg.edit(QuestionEmbed.setFooter("Question time ended.").setColor("GREEN").setDescription(`The correct answer was ${correctAnswer}`));
         if (qd[i + 1] && !this.needToStop[message.channel.id]) {
@@ -262,6 +312,25 @@ class Command extends Message.Event {
 
     });
 
+  }
+
+  pushBoard(localLeaderboard = [], globalBoard = []) {
+    localLeaderboard.forEach(lb => {
+      let foundUserInGB = false;
+      for (let gb = 0; gb < globalBoard.length; gb++) {
+
+        if (lb.userId == globalBoard[gb].userId) {
+          globalBoard[gb].count = globalBoard[gb].count ? globalBoard[gb].count + 1 : 1;
+          globalBoard[gb].time = globalBoard[gb].time ? globalBoard[gb].time + lb.time : lb.time;
+          foundUserInGB = true;
+        }
+
+      }
+      if (!foundUserInGB) {
+        globalBoard.push(lb);
+      }
+    })
+    return globalBoard;
   }
 }
 
