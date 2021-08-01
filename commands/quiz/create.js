@@ -189,7 +189,7 @@ class Command extends Message.Event {
       };
       this.InLog({ question });
       const questionSegment = {};
-      const theQuestion = question.substr(0, question.indexOf("-")).trim();
+      const theQuestion = question.substr(0, question.indexOf("-options")).trim();
       this.InLog({ theQuestion });
       questionSegment.question = theQuestion;
 
