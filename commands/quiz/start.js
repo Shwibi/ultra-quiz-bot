@@ -98,7 +98,7 @@ class Command extends Message.Event {
             // overall leaderboard
             let guildBoard = await guildDB.get("leaderboard") || [];
             // guildBoard.push(...sortedByCorrect);
-            guildBoard = this.pushBoard(sortedByCorrect, guildBoard);
+            guildBoard = this.pushBoard(sortedByCorrect, guildBoard, true);
             const GBsortedByTime = guildBoard.sort((a, b) => a.time - b.time);
             const GBsortedByCorrect = GBsortedByTime.sort((a, b) => b.count - a.count);
             await guildDB.updateOne({
@@ -314,13 +314,15 @@ class Command extends Message.Event {
 
   }
 
-  pushBoard(localLeaderboard = [], globalBoard = []) {
+  pushBoard(localLeaderboard = [], globalBoard = [], global = false) {
+
     localLeaderboard.forEach(lb => {
       let foundUserInGB = false;
       for (let gb = 0; gb < globalBoard.length; gb++) {
 
         if (lb.userId == globalBoard[gb].userId) {
-          globalBoard[gb].count = globalBoard[gb].count ? globalBoard[gb].count + 1 : 1;
+          const increaseCount = global ? lb.count : 1;
+          globalBoard[gb].count = globalBoard[gb].count ? globalBoard[gb].count + increaseCount : 1;
           globalBoard[gb].time = globalBoard[gb].time ? globalBoard[gb].time + lb.time : lb.time;
           foundUserInGB = true;
         }
