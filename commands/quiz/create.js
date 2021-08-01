@@ -41,11 +41,13 @@ class Command extends Message.Event {
 
     // Get initial question framework
     const lowerCaseMsg = message.content.toLowerCase();
+    const rawArgs = message.content.split(/\s/);
+    const rawCommandUpper = rawArgs.shift();
     const args = lowerCaseMsg.split(/\s/);
     const rawCommand = args.shift();
 
     // Set name
-    quizDetails.name = args[0] ? args.join(" ") : "Quiz";
+    quizDetails.name = rawArgs[0] ? rawArgs.join(" ") : "Quiz";
 
     message.channel.send(
       `Creating a new quiz with the name **${quizDetails.name}**. Please type \`confirm\` to confirm. Type anything else to cancel. You have 20 seconds to choose, then this thread will close.`
@@ -81,7 +83,7 @@ class Command extends Message.Event {
               +
               `represents the options. In the options, \`+o <option\` represents a wrong answer, and \`+c <option>\` represents a correct answer. The string after` +
               ` \`-time\` represents the amount of time users should get to answer the question, in seconds.` +
-              `\n\nIf your message is over 2000 characters, please contact the dev to add the quiz manually, as discord does not support message with over 2000 characters.`
+              `\n\nIf your message is over 2000 characters, please upload your questions as a \`.txt\` file (use the popul discord gives).`
             ).then(waitingForQuestionsAllMessage => {
 
               const allQuestionsCollector = new Discord.MessageCollector(message.channel, receiveMsg => receiveMsg.member.id == message.author.id, { max: 1, time: 10 * 60 * 1000 });
