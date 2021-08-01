@@ -76,8 +76,14 @@ class Command extends Message.Event {
           const leaderBoardEmbed = new Discord.MessageEmbed()
             .setTitle(`Leaderboard for quiz **${quizName}**`)
             .setColor("RANDOM")
-            .setTimestamp();
+            .setTimestamp()
+            .setFooter(`Total users: ${sortedByCorrect.length} | If you aren't in the leaderboards, check your dms. (You need to enable dms if you have them disabled)`)
           const max = sortedByCorrect.length < 11 ? sortedByCorrect.length : 10;
+          sortedByCorrect.forEach(userInBoard => {
+            const userId = userInBoard.userId;
+            const user = this.client.users.cache.find(u => u.id == userId) || message.guild.members.cache.find(u => u.id == userId);
+            user.send(`Quiz **${quizName}** over! You got ${userInBoard.count} questions correct in time ${userInBoard.time} seconds!`)
+          })
           for (let lbdU = 0; lbdU < max; lbdU++) {
             const userId = sortedByCorrect[lbdU].userId;
             const user = this.client.users.cache.find(u => u.id == userId) || message.guild.members.cache.find(u => u.id == userId);
@@ -180,14 +186,14 @@ class Command extends Message.Event {
 
         embedMsg.edit(QuestionEmbed.setFooter("Question time ended.").setColor("GREEN").setDescription(`The correct answer was ${correctAnswer}`));
         if (qd[i + 1] && !this.needToStop) {
-          message.channel.send(`Next question is coming in ${timeBetweenQuestions} seconds...`).then(waitNextMsg => {
-            // this.askQuestion(quizId, qd, i + 1, message, callbackOnEnd);
-            shwijs.Countdown(timeBetweenQuestions, (err, te, tr) => {
-              if (tr < 4) waitNextMsg.edit(`Next question is coming in ${tr} seconds...`);
-            }, () => {
-              this.askQuestion(quizId, qd, i + 1, message, callbackOnEnd, globalBoard);
-            })
+
+          // this.askQuestion(quizId, qd, i + 1, message, callbackOnEnd);
+          shwijs.Countdown(timeBetweenQuestions, (err, te, tr) => {
+            // if (tr < 4) waitNextMsg.edit(`Next question is coming in ${tr} seconds...`);
+          }, () => {
+            this.askQuestion(quizId, qd, i + 1, message, callbackOnEnd, globalBoard);
           })
+
 
         }
         else {
