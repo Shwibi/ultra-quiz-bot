@@ -5,6 +5,9 @@ class Main {
 		name = `Bot.` + name;
 		this.name = name;
 		this.cache = [];
+    
+    this.UnknownError = `❌ An unknown error occured! Please try again!`;
+
 	}
 
 	InLog(...message) {

@@ -37,6 +37,7 @@ class Command extends Message.Event {
     this.disbut = Index.disbut;
     this.needToStop = {};
     this.running = [];
+    global.leaderboards = {};
   }
 
   /**
@@ -82,7 +83,7 @@ class Command extends Message.Event {
     let pushToGB = true;
     if (args[2] && args[2] == "false") pushToGB = false;
     const completedQuizzes = await guildDB.get("completed");
-    if (completedQuizzes.includes(id) && args[2] !== "force") pushToDB = false;
+    if (completedQuizzes.includes(id) && args[2] !== "force") pushToGB = false;
 
     message.channel.send(`The quiz **${quizName}** starts in ${startsIn} seconds.`).then(msg => {
       shwijs.Countdown(startsIn, (err, timeElapsed, timeRemaining) => {
@@ -98,6 +99,13 @@ class Command extends Message.Event {
         msg.delete();
         this.askQuestion(id, qd, 0, message, async (globalBoard) => {
           this.running = this.running.filter(eachChannel => eachChannel !== message.channel.id);
+
+          await guildDB.updateOne({
+            $push: {
+              completed: id
+            }
+          });
+
           message.channel.send(`The quiz **${quizName}** ended!`);
           this.InLog(globalBoard);
           const sortedByTime = globalBoard.sort((a, b) => a.time - b.time);
@@ -115,22 +123,35 @@ class Command extends Message.Event {
             await guildDB.updateOne({
               leaderboard: GBsortedByCorrect
             })
-            if (args[3] && args[3] == "dm") {
-              const dmEmbed = new Discord.MessageEmbed()
-                .setTitle("Guild board")
-                .setColor("RANDOM")
-                .setTimestamp()
-                .setFooter(`Total users: ${GBsortedByCorrect.length}`);
-              const maxGB = GBsortedByCorrect.length < 11 ? sortedByCorrect.length : 10;
-              for (let lbgGB = 0; lbgGB < maxGB; lbgGB++) {
-                const userId = GBsortedByCorrect[lbgGB].userId;
-                const user = this.client.users.cache.find(u => u.id == userId) || message.guild.members.cache.find(u => u.id == userId);
-                dmEmbed.addField(`Rank ${lbgGB + 1}. ${user.username}`, `<@${userId}> Correct: ${GBsortedByCorrect[lbgGB].count} | Time: ${GBsortedByCorrect[lbgGB].time / 1000} second(s)`);
-                if (lbgGB == 0) {
-                  dmEmbed.setThumbnail(user.avatarURL());
-                }
+            global.leaderboards[message.guild.id] = GBsortedByCorrect;
+
+
+            // Send guildBoard to guild board channel
+            const guildBoardEmbed = new Discord.MessageEmbed()
+              .setTitle("Guild board")
+              .setColor("RANDOM")
+              .setTimestamp()
+              .setFooter(`Total users: ${GBsortedByCorrect.length}`);
+            const maxGB = GBsortedByCorrect.length < 11 ? GBsortedByCorrect.length : 10;
+            for (let lbgGB = 0; lbgGB < maxGB; lbgGB++) {
+              const userId = GBsortedByCorrect[lbgGB].userId;
+              const user = this.client.users.cache.find(u => u.id == userId) || message.guild.members.cache.find(u => u.id == userId);
+              guildBoardEmbed.addField(`Rank ${lbgGB + 1}. ${user.username}`, `<@${userId}> Correct: ${GBsortedByCorrect[lbgGB].count} | Time: ${GBsortedByCorrect[lbgGB].time / 1000} second(s)`);
+              if (lbgGB == 0) {
+                guildBoardEmbed.setThumbnail(user.avatarURL());
               }
-              message.member.send(dmEmbed);
+            }
+
+            const sendToChannelId = await guildDB.get("guildBoardChannel");
+            if(sendToChannelId) {
+              const boardChannel = message.guild.channels.cache.find(ch => ch.id == sendToChannelId);
+              if(boardChannel) {
+                boardChannel.send(guildBoardEmbed);
+              }
+            }
+
+            if (args[3] && args[3] == "dm") {
+              message.member.send(guildBoardEmbed);
             }
           }
 

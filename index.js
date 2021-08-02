@@ -26,6 +26,7 @@ class EntryPoint extends Main {
 		super(`index` + line);
 		this.client = new Discord.Client();
 		this.connectedToButton = false;
+
 	}
 
 	/**

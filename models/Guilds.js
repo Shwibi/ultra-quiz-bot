@@ -8,6 +8,7 @@ const GuildsSchema = new entryInstance.mongoose.Schema({
     prefix: { type: String, required: true, default: config.Bot.prefix },
     bannedUsers: { type: Array, required: true, default: [] },
     leaderboard: { type: Array, required: false },
-    completed: { type: Array, required: false }
+    completed: { type: Array, required: false },
+    guildBoardChannel: unreqString
 })
 module.exports = entryInstance.mongo.model('Guilds', GuildsSchema);
