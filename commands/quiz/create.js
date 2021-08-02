@@ -211,7 +211,7 @@ class Command extends Message.Event {
       const optsRItime = optsR.indexOf("-time")
       let optsRI = optsR.indexOf("-time");
       const optsRIimg = optsR.indexOf("-image");
-      if(optsRIimg > optsRItime) optsRI = optsRItime
+      if(optsRIimg > optsRItime || optsRIimg < 0) optsRI = optsRItime
       else optsRI = optsRIimg;
 
       const optsEnd = optsRI > 0 ? optsRI - 1 : optsR.length;
