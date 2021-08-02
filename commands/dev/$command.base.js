@@ -4,7 +4,11 @@ const Index = require(`../../index`);
 const fs = require(`fs`);
 const mongoose = require(`mongoose`);
 const Message = require(`../../events/message`);
-const { Cache, Err, Main } = require(`../../utils/Utils`);
+const {
+    Cache,
+    Err,
+    Main
+} = require(`../../utils/Utils`);
 
 const CommandName = 'CommandUseName';
 
@@ -18,9 +22,9 @@ class Command extends Message.Event {
     }
 
     /**
-   * 
-   * @param {Discord.Client} client 
-   */
+     * 
+     * @param {Discord.Client} client 
+     */
     init(client) {
         if (this.initiated) return;
         this.client = client;

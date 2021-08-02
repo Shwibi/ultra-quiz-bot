@@ -4,7 +4,11 @@ const Index = require(`../../index`);
 const fs = require(`fs`);
 const mongoose = require(`mongoose`);
 const Message = require(`../../events/message`);
-const { Cache, Err, Main } = require(`../../utils/Utils`);
+const {
+  Cache,
+  Err,
+  Main
+} = require(`../../utils/Utils`);
 const QuizModel = require("../../models/Quiz");
 const https = require("https");
 
@@ -20,9 +24,9 @@ class Command extends Message.Event {
   }
 
   /**
- * 
- * @param {Discord.Client} client 
- */
+   * 
+   * @param {Discord.Client} client 
+   */
   init(client) {
     if (this.initiated) return;
     this.client = client;
@@ -54,7 +58,10 @@ class Command extends Message.Event {
     ).then(
       initialMessage => {
 
-        const initialCollector = new Discord.MessageCollector(message.channel, receiveMsg => receiveMsg.member.id == message.author.id, { max: 1, time: 20000 });
+        const initialCollector = new Discord.MessageCollector(message.channel, receiveMsg => receiveMsg.member.id == message.author.id, {
+          max: 1,
+          time: 20000
+        });
 
         initialCollector.on("collect", (messageCollected) => {
 
@@ -78,15 +85,17 @@ class Command extends Message.Event {
                   -options +o 7 +o 3 +c 10 +o 2.5
                   -time 10
 
-              \`\`\` `+
-              `\nIn this example, there are **two** questions. The string before \`-options\` represents the question. The string after \`-options\` `
-              +
+              \`\`\` ` +
+              `\nIn this example, there are **two** questions. The string before \`-options\` represents the question. The string after \`-options\` ` +
               `represents the options. In the options, \`+o <option\` represents a wrong answer, and \`+c <option>\` represents a correct answer. The string after` +
               ` \`-time\` represents the amount of time users should get to answer the question, in seconds.` +
               `\n\nIf your message is over 2000 characters, please upload your questions as a \`.txt\` file (use the popul discord gives).`
             ).then(waitingForQuestionsAllMessage => {
 
-              const allQuestionsCollector = new Discord.MessageCollector(message.channel, receiveMsg => receiveMsg.member.id == message.author.id, { max: 1, time: 10 * 60 * 1000 });
+              const allQuestionsCollector = new Discord.MessageCollector(message.channel, receiveMsg => receiveMsg.member.id == message.author.id, {
+                max: 1,
+                time: 10 * 60 * 1000
+              });
 
               allQuestionsCollector.on("collect", async allQuestionsCollected => {
                 let toParse = allQuestionsCollected.content;
@@ -110,8 +119,7 @@ class Command extends Message.Event {
                       });
                     });
                   }
-                }
-                else toParse = allQuestionsCollected.content;
+                } else toParse = allQuestionsCollected.content;
                 setTimeout(() => {
                   this.parseQuestions(toParse, allQuestionsCollected, async (allQuestions) => {
                     let quizId;
@@ -121,8 +129,7 @@ class Command extends Message.Event {
                           message.member.send(
                             `❌ Error: \n`, err, `\n\n Please let the dev know!`
                           );
-                        }
-                        catch (error) {
+                        } catch (error) {
                           this.InLog(error);
                         }
                         message.reply(`❌ There was an error generating quiz, please try again later!`);
@@ -153,8 +160,7 @@ class Command extends Message.Event {
               })
 
             })
-          }
-          else {
+          } else {
             initialMessage.edit("Cancelled.");
           }
 
@@ -169,7 +175,7 @@ class Command extends Message.Event {
 
   }
 
-  parseQuestions(allQuestionsContent, message, callback = (allQuestions) => { }, lowerCase = false) {
+  parseQuestions(allQuestionsContent, message, callback = (allQuestions) => {}, lowerCase = false) {
     const allQuestions = [];
     //TODO
     this.InLog(allQuestionsContent);
@@ -180,29 +186,45 @@ class Command extends Message.Event {
       message.channel.send(`Invalid format, please look at the example and try again!`)
     };
     const questions = toParseRaw.split(`-question`);
-    this.InLog({ questions });
+    this.InLog({
+      questions
+    });
     questions.forEach(question => {
       if (question.length == 0) return;
       if (!question.includes(`-options`) || !question.includes(`+o`) || !question.includes(`+c`)) {
         message.channel.send(`Invalid format, please look at the example and try again!`)
         this.InLog("WRONG", question);
       };
-      this.InLog({ question });
+      this.InLog({
+        question
+      });
       const questionSegment = {};
       const theQuestion = question.substr(0, question.indexOf("-options")).trim();
-      this.InLog({ theQuestion });
+      this.InLog({
+        theQuestion
+      });
       questionSegment.question = theQuestion;
 
       const optsR = question.split("-options")[1];
       const optsRI = optsR.lastIndexOf("-t");
       const optsEnd = optsRI > 0 ? optsRI - 1 : optsR.length;
-      this.InLog({ optsRI, optsEnd, optsR });
+      this.InLog({
+        optsRI,
+        optsEnd,
+        optsR
+      });
       const opts = optsR.substr(0, optsEnd).trim();
       const options = opts.split(/\+/).slice(1);
       questionSegment.options = [];
-      this.InLog({ opts, options });
+      this.InLog({
+        opts,
+        options
+      });
       options.forEach(option => {
-        questionSegment.options.push({ name: option.slice(1).trim(), status: option.substr(0, 1) });
+        questionSegment.options.push({
+          name: option.slice(1).trim(),
+          status: option.substr(0, 1)
+        });
       })
 
       // Time
@@ -215,7 +237,10 @@ class Command extends Message.Event {
 
     })
 
-    this.InLog({ allQuestions, options: allQuestions[0].options });
+    this.InLog({
+      allQuestions,
+      options: allQuestions[0].options
+    });
 
     return callback(allQuestions);
   }
@@ -233,8 +258,14 @@ module.exports = {
   aliases: ["new"],
   permissions: ['SEND_MESSAGES'],
   cooldown: 30,
-  color: 'RANDOM',
-  extraFields: [{ name: "Maximum limit", value: "No limit! You can even upload a text file if you want :)" }, { name: "Expiry", value: "Never" }],
+  color: '#21B54A',
+  extraFields: [{
+    name: "Maximum limit",
+    value: "No limit! You can even upload a text file if you want :)"
+  }, {
+    name: "Expiry",
+    value: "Never"
+  }],
   help: "To create a new quiz, please use the command \`<prefix>create [name of quiz]\`, then follow this format for questions: \n\`\`\`-question <Your question here> \n-options +o <wrong option> +o <wrong option> +c <correct option> \n-time <Time in seconds>\`\`\`You need at least a question, and one wrong option and a correct option. The time defaults to 10 seconds. It is compulsary to write time AFTER writing options. You need to add new lines after each argument, exactly like in the example. \nYou can add as many options as you want.",
   call: async (message, client) => {
     if (!instance.initiated) instance.init(client);

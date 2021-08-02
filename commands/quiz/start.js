@@ -5,7 +5,11 @@ const Index = require(`../../index`);
 const fs = require(`fs`);
 const mongoose = require(`mongoose`);
 const Message = require(`../../events/message`);
-const { Cache, Err, Main } = require(`../../utils/Utils`);
+const {
+  Cache,
+  Err,
+  Main
+} = require(`../../utils/Utils`);
 const QuizModel = require("../../models/Quiz");
 const Guilds = require("../../models/Guilds");
 
@@ -23,9 +27,9 @@ class Command extends Message.Event {
   }
 
   /**
- * 
- * @param {Discord.Client} client 
- */
+   * 
+   * @param {Discord.Client} client 
+   */
   init(client) {
     if (this.initiated) return;
     this.client = client;
@@ -54,24 +58,31 @@ class Command extends Message.Event {
       if (shwijs.IsInteger(parseInt(args[1]))) startsIn = parseInt(args[1]);
     }
 
-    let pushToGB = true;
-    if (args[2] && args[2] == "false") pushToGB = false;
-
     const id = args[0];
     if (!id) return message.reply(`Please provide the id of the quiz to start!`);
 
 
 
-    const quizFromDb = await QuizModel.find({ quizId: id });
+    const quizFromDb = await QuizModel.find({
+      quizId: id
+    });
     if (!quizFromDb || !quizFromDb[0]?.quizDetails) return message.reply(`There exists no such quiz!`);
     const quizName = quizFromDb[0]?.name || "Quiz";
     const qd = quizFromDb[0].quizDetails;
 
-    const guildDB = await Guilds.findOne({ guildId: message.guild.id });
+    const guildDB = await Guilds.findOne({
+      guildId: message.guild.id
+    });
     if (!guildDB) return message.channel.send(`Something went wrong! Please try again!`);
     this.banList = await guildDB.get("bannedUsers");
     if (this.banList.includes(message.author.id)) return message.delete();
 
+
+
+    let pushToGB = true;
+    if (args[2] && args[2] == "false") pushToGB = false;
+    const completedQuizzes = await guildDB.get("completed");
+    if (completedQuizzes.includes(id) && args[2] !== "force") pushToDB = false;
 
     message.channel.send(`The quiz **${quizName}** starts in ${startsIn} seconds.`).then(msg => {
       shwijs.Countdown(startsIn, (err, timeElapsed, timeRemaining) => {
@@ -157,7 +168,7 @@ class Command extends Message.Event {
 
   }
 
-  askQuestion(quizId, qd, i, message, callbackOnEnd = (leaderboard) => { }, globalBoard = []) {
+  askQuestion(quizId, qd, i, message, callbackOnEnd = (leaderboard) => {}, globalBoard = []) {
     const q = qd[i];
     const QuestionEmbed = new Discord.MessageEmbed()
       .setTitle(`${i + 1}. ${q.question}`)
@@ -170,7 +181,10 @@ class Command extends Message.Event {
     let correctAnswer;
     let correctIndex;
     for (let o = 0; o < q.options.length; o++) {
-      optVals[o + 1] = { name: q.options[o].name, status: q.options[o].status };
+      optVals[o + 1] = {
+        name: q.options[o].name,
+        status: q.options[o].status
+      };
       if (q.options[o].status == "c") {
         correctAnswer = `${o + 1}) ${q.options[o].name}`;
         correctIndex = correctAnswer.substr(0, 1);
@@ -210,10 +224,13 @@ class Command extends Message.Event {
           if (buttonArgs[2] == correctIndex) {
             await button.reply.send(`You got it right!`, true);
 
-            localLeaderboard.push({ userId: ID, time: answerDate - embedMsg.createdTimestamp, count: 1 });
+            localLeaderboard.push({
+              userId: ID,
+              time: answerDate - embedMsg.createdTimestamp,
+              count: 1
+            });
 
-          }
-          else {
+          } else {
             await button.reply.send(`Oops, you got it wrong! The correct answer was **${correctAnswer}**`, true);
           }
         }
@@ -254,8 +271,7 @@ class Command extends Message.Event {
           })
 
 
-        }
-        else {
+        } else {
           callbackOnEnd(globalBoard);
         }
       })
@@ -348,8 +364,30 @@ module.exports = {
   aliases: ["begin"],
   permissions: ['SEND_MESSAGES'],
   cooldown: 25,
-  color: 'ORANGE',
-  help: "Start a new quiz using the quiz ID you got after creating the quiz. Format: \`<prefix>start <id>\`",
+  color: '#FF00B5',
+  extraFields: [{
+      name: "ID",
+      value: "The id of the quiz you got after creating the quiz.",
+      inline: true
+    },
+    {
+      name: "Time",
+      value: "Write the number of seconds the quiz should start in.",
+      inline: true
+    },
+    {
+      name: "Add in server board",
+      value: "Use true to add to server board (default). \nUse false to prevent adding this quiz to server board. \nUse force to add the quiz to the guild leaderboard even if it already exists."
+    }, {
+      name: "DM",
+      value: "Write `dm` to get a dm with the guild leaderboard after the quiz is over.",
+      inline: true
+    }, {
+      name: "Example",
+      value: "`??start 5 15 true dm` This will start the quiz with the id **5** in **15 seconds** and add it to guild leaderboard if it does not exist, it will also dm the user with the server leaderboard after the quiz.\n`??start 5 10 force dm` This will start the quiz with id **5** in **15 seconds** and add it to server leaderboard even if it already exists, then it will dm the user with the server leaderboard after the quiz has ended."
+    }
+  ],
+  help: "Start a new quiz using the quiz ID you got after creating the quiz. Format: \`<prefix>start <id> [time in seconds] [add in server board: true/false/force] [dm the global board: dm]\`",
   call: async (message, client) => {
     if (!instance.initiated) instance.init(client);
     instance.call(message);
