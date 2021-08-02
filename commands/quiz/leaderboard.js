@@ -57,9 +57,10 @@ class Command extends Message.Event {
 
     let GBsortedByCorrect;
     if (!global.leaderboards || !global.leaderboards[message.guild.id]) {
-      GBsortedByCorrect = await Guilds.findOne({
+      const guildDB = await Guilds.findOne({
         guildId: message.guild.id
       });
+      GBsortedByCorrect = await guildDB.get("leaderboard");
       if (!GBsortedByCorrect) return message.reply(this.UnknownError);
     } else GBsortedByCorrect = global.leaderboards[message.guild.id];
 
