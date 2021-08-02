@@ -201,6 +201,9 @@ class Command extends Message.Event {
     const optButtonsRow = new this.disbut.MessageActionRow();
     let correctAnswer;
     let correctIndex;
+    if(q.image) {
+      QuestionEmbed.setImage(q.image);
+    }
     for (let o = 0; o < q.options.length; o++) {
       optVals[o + 1] = {
         name: q.options[o].name,

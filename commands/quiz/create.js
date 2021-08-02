@@ -79,10 +79,12 @@ class Command extends Message.Event {
                   -question What is 1 + 1 equal to?
                   -options +o 1 +c 2 +o 3 +o 4
                   -time 20
+                  -image https://media.discordapp.net/attachments/871442026602827827/871754169155977336/unknown.png?width=306&height=187
 
 
                   -question What is 2 x 5?
                   -options +o 7 +o 3 +c 10 +o 2.5
+                  -image https://media.discordapp.net/attachments/871442026602827827/871754169155977336/unknown.png?width=306&height=200
                   -time 10
 
               \`\`\` ` +
@@ -206,7 +208,12 @@ class Command extends Message.Event {
       questionSegment.question = theQuestion;
 
       const optsR = question.split("-options")[1];
-      const optsRI = optsR.lastIndexOf("-t");
+      const optsRItime = optsR.indexOf("-time")
+      let optsRI = optsR.indexOf("-time");
+      const optsRIimg = optsR.indexOf("-image");
+      if(optsRIimg > optsRItime) optsRI = optsRItime
+      else optsRI = optsRIimg;
+
       const optsEnd = optsRI > 0 ? optsRI - 1 : optsR.length;
       this.InLog({
         optsRI,
@@ -229,9 +236,19 @@ class Command extends Message.Event {
 
       // Time
       const timeArgs = question.includes("-time") ? question.split("-time") : ["", " 30 "];
-      const timeString = timeArgs[1].trim();
+      const timeLastIndex = timeArgs[1].includes("-") ? timeArgs[1].lastIndexOf("-") : timeArgs[1].length;
+      const timeString = timeArgs[1].trim().substr(0, timeLastIndex);
       const time = !isNaN(timeString) ? parseFloat(timeString) * 1000 : 30 * 1000;
       questionSegment.time = time || 30000;
+
+      // Image
+      if(question.includes("-image")) {
+        const imgArgs = question.split("-image");
+        const rawURL = imgArgs[1];
+        const imgLastIndex = rawURL.includes("-t") ? rawURL.lastIndexOf("-t") : rawURL.length;
+        const imageURL = rawURL.substr(0, imgLastIndex).trim();
+        questionSegment.image = imageURL;
+      }
 
       allQuestions.push(questionSegment);
 
@@ -265,8 +282,11 @@ module.exports = {
   }, {
     name: "Expiry",
     value: "Never"
+  }, {
+    name: "Image",
+    value: "The image is considered as a part of the question, you can link to an image using `-image <url>` and it will show up in the embed."
   }],
-  help: "To create a new quiz, please use the command \`<prefix>create [name of quiz]\`, then follow this format for questions: \n\`\`\`-question <Your question here> \n-options +o <wrong option> +o <wrong option> +c <correct option> \n-time <Time in seconds>\`\`\`You need at least a question, and one wrong option and a correct option. The time defaults to 10 seconds. It is compulsary to write time AFTER writing options. You need to add new lines after each argument, exactly like in the example. \nYou can add as many options as you want.",
+  help: "To create a new quiz, please use the command \`<prefix>create [name of quiz]\`, then follow this format for questions: \n\`\`\`-question <Your question here> \n-options +o <wrong option> +o <wrong option> +c <correct option> \n-time <Time in seconds> \n-image <Url>\`\`\`You need at least a question, and one wrong option and a correct option. The time defaults to 10 seconds. It is compulsary to write time AFTER writing options. You need to add new lines after each argument, exactly like in the example. \nYou can add as many options as you want.",
   call: async (message, client) => {
     if (!instance.initiated) instance.init(client);
     instance.call(message);
