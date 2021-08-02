@@ -56,7 +56,7 @@ class Command extends Message.Event {
     if (!this.initiated) return new Err(`Called ${CommandName} command tendril without message initiation!`);
 
     let GBsortedByCorrect;
-    if (!globa.leaderboards || !global.leaderboards[message.guild.id]) {
+    if (!global.leaderboards || !global.leaderboards[message.guild.id]) {
       GBsortedByCorrect = await Guilds.findOne({
         guildId: message.guild.id
       });
