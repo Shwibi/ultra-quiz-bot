@@ -64,7 +64,7 @@ class Event extends Index.EntryPoint {
 
         message.status = 'continue';
         // Search for prefix
-        if (!global.prefixes.get(message.guild.id)) {
+        if (message.guild && !global.prefixes.get(message.guild.id)) {
             message.guildDB = await Guilds.findOne({ guildId: message.guild.id });
             if (!message.guildDB) {
                 message.guildDB = await Guilds.create({
@@ -77,6 +77,7 @@ class Event extends Index.EntryPoint {
         } else {
             message.prefix = global.prefixes.get(message.guild.id);
         }
+        if(!message.guild) message.prefix = this.config.Bot.prefix;
 
 
         // Help by ping
