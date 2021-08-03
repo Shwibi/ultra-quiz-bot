@@ -195,7 +195,7 @@ class Command extends Message.Event {
       .setDescription(`Click on the button that you think is the best answer!`)
       .setColor('RED')
       .setFooter(`You have ${(q.time / 1000) || 30} seconds.`);
-    if(q.question.length > 70) {
+    if(q.question.length > 230) {
       QuestionEmbed.setTitle(`${i + 1}. (Question too big, see description)`).setDescription(q.question);
     }
     else QuestionEmebd.setTitle(`${i + 1}. ${q.question}`);
