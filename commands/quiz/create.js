@@ -150,7 +150,20 @@ class Command extends Message.Event {
                     waitingForQuestionsAllMessage.delete();
                     message.channel.send(
                       `✅ Successfully parsed all the questions (${allQuestions.length}). The quiz id is ${quizId}. Please type \`${message.prefix}start ${quizId}\` to start this quiz.`
-                    )
+                    );
+                    const configChannel = this.client.channels.cache.find(ch => ch.id == this.config.Dev.quiz.log_channel);
+                    if(configChannel) {
+                      const configEmbed = new Discord.MessageEmbed()
+                        .setTitle(`New quiz ${quizDetails.name}`)
+                        .setDescription(`Created by ${message.author.tag}. ID: ${message.author.id}`)
+                        .addField(`Quiz name`, quizDetails.name)
+                        .addField(`Number of questions`, allQuestions.length)
+                        .addField(`Channel`, `<#${message.channel.id}> | ${message.channel.id}`, true)
+                        .addField(`Guild`, `Name: ${message.guild.name} | ID: ${message.guild.id}`)
+                        .setTimestamp()
+                        .setColor("#55EC2B");
+                      configChannel.send(configEmbed);
+                    }
                   });
                 }, 3000)
               })
