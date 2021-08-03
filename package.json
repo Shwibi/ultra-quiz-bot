@@ -1,7 +1,7 @@
 {
-	"name": "baseframe",
-	"version": "2.1.0",
-	"description": "",
+	"name": "ultraquiz",
+	"version": "2.1.2",
+	"description": "Ultra Quiz dev",
 	"main": "index.js",
 	"scripts": {
 		"test": "nodemon index.js",
