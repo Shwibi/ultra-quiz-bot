@@ -74,10 +74,9 @@ class Event extends Index.EntryPoint {
             }
             message.prefix = await message.guildDB.get('prefix') || this.config.Bot.prefix;
             global.prefixes.set(message.guild.id, message.prefix);
-        } else {
+        } else if(message.guild) {
             message.prefix = global.prefixes.get(message.guild.id);
-        }
-        if(!message.guild) message.prefix = this.config.Bot.prefix;
+        } else message.prefix = this.config.Bot.prefix;
 
 
         // Help by ping
