@@ -219,10 +219,22 @@ class Command extends Message.Event {
     }
     for (const key in optVals) {
       // QuestionEmbed.addField(key, optVals[key].name)
-      let optBut = new this.disbut.MessageButton()
-        .setLabel(optVals[key].name)
+      const label = optVals[key].name;
+      let optBut;
+      if(label.length < 75) {
+        optBut = new this.disbut.MessageButton()
+        .setLabel(label)
         .setID(`${quizId}-${i + 1}-${key}`)
-        .setStyle("blurple");
+        .setStyle("green");
+      
+      }
+      else {
+        QuestionEmbed.addField(`Option ${key}`, label);
+        optBut = new this.disbut.MessageButton()
+          .setLabel(key)
+          .setID(`${quizId}-${i + 1}-${key}`)
+          .setStyle("green")
+      }
       optButtonsRow.addComponent(optBut);
     }
 
@@ -286,7 +298,7 @@ class Command extends Message.Event {
         // })
         globalBoard = this.pushBoard(localLeaderboard, globalBoard);
 
-        embedMsg.edit(QuestionEmbed.setFooter("Question time ended.").setColor("GREEN").setDescription(`The correct answer was ${correctAnswer}`));
+        embedMsg.edit(QuestionEmbed.setFooter("Question time ended.").setColor("GREEN").addField(`Quiz over!`, `The correct answer was ${correctAnswer}`));
         if (qd[i + 1] && !this.needToStop[message.channel.id]) {
 
           // this.askQuestion(quizId, qd, i + 1, message, callbackOnEnd);
