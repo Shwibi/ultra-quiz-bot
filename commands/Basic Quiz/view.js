@@ -94,22 +94,29 @@ class Command extends Message.Event {
           }
         }
 
-        message.channel.send(Embed).then(msg => this.handleReact(msg, pageNumber, totalPages, allQuestions, Embed, message));
+        message.channel.send(Embed).then(msg => {
+          
+          msg.react("◀").then(
+            msg.react("▶")
+          )
+          
+          this.handleReact(msg, pageNumber, totalPages, allQuestions, Embed, message)
+        });
 
     }
 
     handleReact(msg, pageNumber, totalPages, allQuestions, Embed, message) {
 
-        msg.reactions.removeAll();
+        // msg.reactions.removeAll();
       
-        if(pageNumber > 1) msg.react("◀")
-        if(pageNumber < totalPages) msg.react("▶")
 
         const collector = msg.createReactionCollector((reaction, user) => user.id == message.author.id && (reaction.emoji.name == "▶" || reaction.emoji.name == "◀"), {max: 1, time: 15000});
         collector.on("collect", (reaction, user) => {
           
           if(user.bot) return;
-          // reaction.remove();
+
+          reaction.remove();
+
           if(reaction.emoji.name == "◀" && pageNumber > 1) {
 
             pageNumber--;
