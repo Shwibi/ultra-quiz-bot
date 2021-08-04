@@ -6,7 +6,7 @@ const mongoose = require(`mongoose`);
 const Message = require(`../../events/message`);
 const { Cache, Err, Main } = require(`../../utils/Utils`);
 const quiz = require("../../store/quiz.json");
-const quizCommand = require("./create");
+const quizCommand = require("../Basic Quiz/create");
 const QuizModel = require("../../models/Quiz");
 const CommandName = 'Load';
 

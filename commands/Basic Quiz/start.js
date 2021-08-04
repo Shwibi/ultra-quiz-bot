@@ -38,6 +38,7 @@ class Command extends Message.Event {
     this.needToStop = {};
     this.running = [];
     global.leaderboards = {};
+    this.quizCache = {};
   }
 
   /**
@@ -63,13 +64,20 @@ class Command extends Message.Event {
     if (!id) return message.reply(`Please provide the id of the quiz to start!`);
 
 
+    let quizFromDb;
 
-    const quizFromDb = await QuizModel.find({
-      quizId: id
-    });
-    if (!quizFromDb || !quizFromDb[0]?.quizDetails) return message.reply(`There exists no such quiz!`);
-    const quizName = quizFromDb[0]?.name || "Quiz";
-    const qd = quizFromDb[0].quizDetails;
+    if(this.quizCache[id]) {
+      quizFromDb = this.quizCache[id];
+    }
+    else {
+      quizFromDb = await QuizModel.findOne({
+        quizId: id
+      });
+    }
+    if (!quizFromDb || !quizFromDb.quizDetails) return message.reply(`There exists no such quiz!`);
+    this.quizCache[id] = quizFromDb;
+    const quizName = quizFromDb?.name || "Quiz";
+    const qd = quizFromDb.quizDetails;
 
     const guildDB = await Guilds.findOne({
       guildId: message.guild.id
@@ -196,9 +204,9 @@ class Command extends Message.Event {
       .setColor('RED')
       .setFooter(`You have ${(q.time / 1000) || 30} seconds.`);
     if(q.question.length > 230) {
-      QuestionEmbed.setTitle(`${i + 1}. (Question too big, see description)`).setDescription(q.question);
+      QuestionEmbed.setTitle(`${i + 1}. (See description for question)`).setDescription(q.question);
     }
-    else QuestionEmebd.setTitle(`${i + 1}. ${q.question}`);
+    else QuestionEmbed.setTitle(`${i + 1}. ${q.question}`);
     const optVals = {};
     const optButtonsRow = new this.disbut.MessageActionRow();
     let correctAnswer;
@@ -387,6 +395,13 @@ class Command extends Message.Event {
       }
     })
     return globalBoard;
+  }
+
+  
+  deleteQuiz(id) {
+    if(this.quizCache && this.quizCache[id]) {
+      delete quizCache[id];
+    }
   }
 }
 

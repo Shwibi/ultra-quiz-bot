@@ -91,7 +91,8 @@ class Command extends Message.Event {
               `\nIn this example, there are **two** questions. The string before \`-options\` represents the question. The string after \`-options\` ` +
               `represents the options. In the options, \`+o <option\` represents a wrong answer, and \`+c <option>\` represents a correct answer. The string after` +
               ` \`-time\` represents the amount of time users should get to answer the question, in seconds.` +
-              `\n\nIf your message is over 2000 characters, please upload your questions as a \`.txt\` file (use the popup discord gives).`
+              `\n\nIf your message is over 2000 characters, please upload your questions as a \`.txt\` file (use the popup discord gives).` +
+              `\nPlease do not use option nunbering/lettering such as "A" "B" or "1" "2" etc. in the options. That gets set automatically!`
             ).then(waitingForQuestionsAllMessage => {
 
               const allQuestionsCollector = new Discord.MessageCollector(message.channel, receiveMsg => receiveMsg.member.id == message.author.id, {
@@ -145,7 +146,8 @@ class Command extends Message.Event {
                     const quizDbInst = await QuizModel.create({
                       quizId: quizId,
                       quizDetails: allQuestions,
-                      name: quizDetails.name
+                      name: quizDetails.name,
+                      creator: message.author.id
                     })
                     waitingForQuestionsAllMessage.delete();
                     message.channel.send(
@@ -274,6 +276,7 @@ class Command extends Message.Event {
 
     return callback(allQuestions);
   }
+
 }
 
 const instance = new Command();
