@@ -117,7 +117,7 @@ class Command extends Message.Event {
   }
 
   delete(id) {
-    this.quizzes = this.quizzes.filter(q => q.quizId !== id);
+    this.quizzes = this.quizzes.filter(q => q.quizId != id);
   }
 }
 

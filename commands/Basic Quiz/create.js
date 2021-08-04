@@ -126,23 +126,29 @@ class Command extends Message.Event {
                 setTimeout(() => {
                   this.parseQuestions(toParse, allQuestionsCollected, async (allQuestions) => {
                     let quizId;
-                    await QuizModel.estimatedDocumentCount({}, (err, count) => {
-                      if (err) {
-                        try {
-                          message.member.send(
-                            `❌ Error: \n`, err, `\n\n Please let the dev know!`
-                          );
-                        } catch (error) {
-                          this.InLog(error);
-                        }
-                        message.reply(`❌ There was an error generating quiz, please try again later!`);
-                        waitingForQuestionsAllMessage.delete();
-                        return;
-                      }
+                    let quizSetter = await QuizModel.findOne({quizId: 0});
+                    if(!quizSetter) {
+                      quizSetter = await QuizModel.create({quizId: 0, quizDetails: "50", creator: message.author.id});
+                    }
+                    const prevCount = quizSetter.quizDetails;
+                    quizId = parseInt(prevCount) + 1;
+                    await quizSetter.updateOne({quizDetails: `${quizId}`});
+                    // await QuizModel.estimatedDocumentCount({}, (err, count) => {
+                    //   if (err) {
+                    //     try {
+                    //       message.member.send(
+                    //         `❌ Error: \n`, err, `\n\n Please let the dev know!`
+                    //       );
+                    //     } catch (error) {
+                    //       this.InLog(error);
+                    //     }
+                    //     message.reply(`❌ There was an error generating quiz, please try again later!`);
+                    //     waitingForQuestionsAllMessage.delete();
+                    //     return;
+                    //   }
 
-                      quizId = count;
-                    });
-                    quizId += 1;
+                    //   quizId = count;
+                    // });
                     const quizDbInst = await QuizModel.create({
                       quizId: quizId,
                       quizDetails: allQuestions,
