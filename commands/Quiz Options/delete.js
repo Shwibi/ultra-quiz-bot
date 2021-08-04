@@ -22,6 +22,9 @@ class Command extends Message.Event {
      */
     constructor() {
         super(CommandName);
+        this.deleted = [];
+        this.doesNotExist = [];
+        this.notExistMsg = `:x: That quiz does not exist!`;
     }
 
     /**
@@ -32,9 +35,6 @@ class Command extends Message.Event {
         if (this.initiated) return;
         this.client = client;
         this.initiated = true;
-        this.deleted = [];
-        this.doesNotExist = [];
-        this.notExistMsg = `:x: That quiz does not exist!`;
     }
 
     /**
