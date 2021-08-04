@@ -79,8 +79,8 @@ class Event extends Index.EntryPoint {
         } else message.prefix = this.config.Bot.prefix;
 
         // Developer
-        // if(!message.isDev) return;
-        // message.prefix = this.config.Dev.prefix;
+        if(!message.isDev) return;
+        message.prefix = this.config.Dev.prefix;
 
 
         // Help by ping
