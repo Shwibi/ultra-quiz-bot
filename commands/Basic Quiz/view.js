@@ -62,14 +62,14 @@ class Command extends Message.Event {
           if(!fromDB) return message.reply(`Did not find any quiz with that id!`);
           quizDetails = fromDB.toObject();
           this.quizCache[quizId] = quizDetails;
-          this.InLog(quizDetails);
+          // this.InLog(quizDetails);
         }
 
         // Generate pages
         const allQuestions = quizDetails.quizDetails;
         const totalPages = Math.ceil(allQuestions.length / this.maxPerPage)
         let pageNumber = args[1] ? !isNaN(parseInt(args[1])) ? parseInt(args[1]) <= totalPages ? parseInt(args[1]) : 1 : 1 : 1;
-        const Embed = new Discord.MessageEmbed()
+        let Embed = new Discord.MessageEmbed()
           .setTitle(`Viewing quiz **${quizDetails.name || "Quiz"}**`)
           .setDescription(`ID: ${quizDetails.quizId} | Total Questions: ${allQuestions.length}`)
           .setColor("RANDOM")
@@ -77,26 +77,13 @@ class Command extends Message.Event {
           .setTimestamp();
 
         if(allQuestions.length > this.maxPerPage) {
-          const maxLoop = (this.maxPerPage*(pageNumber)) <= allQuestions.length ? (this.maxPerPage*(pageNumber)) : allQuestions.length;
-          for(let i = (this.maxPerPage * (pageNumber - 1)); i < maxLoop; i++) {
-            const DoI = i + (this.maxPerPage * (pageNumber - 1));
-            const qu = allQuestions[i]
-            this.InLog({pageNumber, max: this.maxPerPage, DoI})
-            const optArray = [];
-            let correctAnswer;
-            qu.options.forEach(opt => {
-              optArray.push(opt.name);
-              if(opt.status == "c") correctAnswer = opt.name;
-            })
-            // Embed.addField(`${i + 1}. ${qu.question}`, `Options: \n${optArray.join("\n")} \n\nCorrect answer: ${correctAnswer}`);
-            this.addOption(Embed, i, qu, correctAnswer, optArray)
-          }
+          Embed = this.embed(pageNumber, allQuestions, Embed, totalPages);
         }
         else {
           const allQuestions = quizDetails.quizDetails;
           for(let i = 0; i < allQuestions.length; i++) {
             const qu = allQuestions[i]
-            this.InLog({pageNumber, max: this.maxPerPage})
+            // this.InLog({pageNumber, max: this.maxPerPage})
             const optArray = [];
             let correctAnswer;
             qu.options.forEach(opt => {
@@ -107,8 +94,61 @@ class Command extends Message.Event {
           }
         }
 
-        message.channel.send(Embed);
+        message.channel.send(Embed).then(msg => this.handleReact(msg, pageNumber, totalPages, allQuestions, Embed, message));
 
+    }
+
+    handleReact(msg, pageNumber, totalPages, allQuestions, Embed, message) {
+
+        msg.reactions.removeAll();
+      
+        if(pageNumber > 1) msg.react("◀")
+        if(pageNumber < totalPages) msg.react("▶")
+
+        const collector = msg.createReactionCollector((reaction, user) => user.id == message.author.id && (reaction.emoji.name == "▶" || reaction.emoji.name == "◀"), {max: 1, time: 15000});
+        collector.on("collect", (reaction, user) => {
+          
+          if(user.bot) return;
+          // reaction.remove();
+          if(reaction.emoji.name == "◀" && pageNumber > 1) {
+
+            pageNumber--;
+            Embed = this.embed(pageNumber, allQuestions, Embed, totalPages);
+            
+
+          }
+
+          if(reaction.emoji.name == "▶" && pageNumber < totalPages) {
+            pageNumber++;
+            Embed = this.embed(pageNumber, allQuestions, Embed, totalPages);
+            
+          }
+
+          msg.edit(Embed).then(this.handleReact(msg, pageNumber, totalPages, allQuestions, Embed, message));
+
+        })
+      
+    }
+
+    embed(pageNumber = 1, allQuestions, Embed, totalPages) {
+      Embed.fields = [];
+      const maxLoop = (this.maxPerPage*(pageNumber)) <= allQuestions.length ? (this.maxPerPage*(pageNumber)) : allQuestions.length;
+      for(let i = (this.maxPerPage * (pageNumber - 1)); i < maxLoop; i++) {
+        const DoI = i + (this.maxPerPage * (pageNumber - 1));
+        const qu = allQuestions[i];
+        // this.InLog({qu, allQuestions});
+        // this.InLog({pageNumber, max: this.maxPerPage, DoI})
+        const optArray = [];
+        let correctAnswer;
+        qu.options.forEach(opt => {
+          optArray.push(opt.name);
+          if(opt.status == "c") correctAnswer = opt.name;
+        })
+        // Embed.addField(`${i + 1}. ${qu.question}`, `Options: \n${optArray.join("\n")} \n\nCorrect answer: ${correctAnswer}`);
+        Embed = this.addOption(Embed, i, qu, correctAnswer, optArray)
+      }
+      Embed.setFooter(`Viewing page ${pageNumber}/${totalPages} | You have 15 seconds to change pages with reactions.`);
+      return Embed;
     }
 
     addOption(Embed, i, qu, correctAnswer, optArray) {
