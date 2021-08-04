@@ -115,19 +115,18 @@ class Command extends Message.Event {
           
           if(user.bot) return;
 
-          reaction.remove();
-
           if(reaction.emoji.name == "◀" && pageNumber > 1) {
 
             pageNumber--;
             Embed = this.embed(pageNumber, allQuestions, Embed, totalPages);
-            
+            if(user.id !== this.client.user.id) reaction.remove;
 
           }
 
           if(reaction.emoji.name == "▶" && pageNumber < totalPages) {
             pageNumber++;
             Embed = this.embed(pageNumber, allQuestions, Embed, totalPages);
+            if(user.id !== this.client.user.id) reaction.remove;
             
           }
 
