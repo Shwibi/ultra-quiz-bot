@@ -58,24 +58,26 @@ class Command extends Message.Event {
     if (!canContinue) return message.reply(this.didNotFind);
 
     // Search for quizzes
-    let foundInCache;
+    let foundInCache = false;
     let quizFound;
     let idArray = [];
     this.quizzes.forEach(q => {
-      if (q.name.toLowerCase().includes(nameOfQuiz.toLowerCase())) foundInCache = true;
-      quizFound = q;
-      idArray.push(`${q.quizId}: ${q.name}`);
+      if (q.name.toLowerCase().includes(nameOfQuiz.toLowerCase())) {
+        foundInCache = true
+        quizFound = q;
+        idArray.push(`${q.quizId}: ${q.name}`);
+      }
     })
     idArray = idArray.filter(i => i.split(":")[0] != quizFound.quizId);
     if (foundInCache) {
       const QuizEmbed = new Discord.MessageEmbed()
-        .setTitle(`Found ${idArray.length} quizzes! ${quizFound.name}`)
+        .setTitle(`Found ${idArray.length + 1} quiz(zes)! ${quizFound.name}`)
         .setDescription(`Name: ${quizFound.name} | Total questions: ${quizFound.quizDetails.length} | ID: ${quizFound.quizId}`)
 
         .setColor(`RANDOM`);
 
       if (idArray.length > 0) {
-        QuizEmbed.addField(`Other quizzes with similar name`, idArray.join(", \n"))
+        QuizEmbed.addField(`Other quiz(zes) with similar name`, idArray.join(", \n"))
       }
       message.channel.send(QuizEmbed);
     } else {
