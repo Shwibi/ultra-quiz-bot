@@ -125,16 +125,16 @@ const instance = new Command();
 // Exports
 module.exports = {
     name: CommandName.toLowerCase(),
-    description: CommandName,
+    description: "View a quiz using it's id!",
     useName: CommandName,
     ignore: false,
     guildOnly: false,
-    aliases: [],
+    aliases: ["see"],
     permissions: ['SEND_MESSAGES'],
-    cooldown: 3,
-    color: 'RANDOM',
-    extraFields: [],
-    help: CommandName,
+    cooldown: 10,
+    color: '#C281FF',
+    extraFields: [{name: "Quiz ID", value: "You can get the quiz id by using the `search` command!"}, {name: "Page number", value: "This is an optional parameter. Just use the command without it and look for the number of pages at the bottom of the embed, and then look at any page number you want by reusing the command!"}],
+    help: `<prefix>view <quizId> [Page number]`,
     call: async (message, client) => {
         if (!instance.initiated) instance.init(client);
         instance.call(message);
