@@ -88,7 +88,8 @@ class Command extends Message.Event {
               optArray.push(opt.name);
               if(opt.status == "c") correctAnswer = opt.name;
             })
-            Embed.addField(`${i + 1}. ${qu.question}`, `Options: \n${optArray.join("\n")} \n\nCorrect answer: ${correctAnswer}`);
+            // Embed.addField(`${i + 1}. ${qu.question}`, `Options: \n${optArray.join("\n")} \n\nCorrect answer: ${correctAnswer}`);
+            this.addOption(Embed, i, qu, correctAnswer, optArray)
           }
         }
         else {
@@ -102,12 +103,25 @@ class Command extends Message.Event {
               optArray.push(opt.name);
               if(opt.status == "c") correctAnswer = opt.name;
             })
-            Embed.addField(`${i + 1}. ${qu.question}`, `Options: \n${optArray.join("\n")} \n\nCorrect answer: ${correctAnswer}`);
+            Embed = this.addOption(Embed, i, qu, correctAnswer, optArray)
           }
         }
 
         message.channel.send(Embed);
 
+    }
+
+    addOption(Embed, i, qu, correctAnswer, optArray) {
+      const allOptions = "Options: \n" + optArray.join("\n") + `\n\nCorrect answer: ${correctAnswer}`;
+      let field = allOptions;
+      let question = `${i + 1}. ${qu.question}`;
+      if(question.length > 250) {
+        field = `[Question continued] ${question.substr(230, question.length)} \n${allOptions}`
+        question = question.substr(0, 250);
+        
+      }
+      Embed.addField(question, field);
+      return Embed;
     }
 
     delete(id) {
