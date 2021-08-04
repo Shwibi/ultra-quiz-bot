@@ -78,6 +78,10 @@ class Event extends Index.EntryPoint {
             message.prefix = global.prefixes.get(message.guild.id);
         } else message.prefix = this.config.Bot.prefix;
 
+        // Developer
+        // if(!message.isDev) return;
+        // message.prefix = this.config.Dev.prefix;
+
 
         // Help by ping
         if (msg.includes(this.client.user.id)) message.reply(`Prefix is: \`${message.prefix}\`. You can use \`${message.prefix}help\` to look at help! :)`)

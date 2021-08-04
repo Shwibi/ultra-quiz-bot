@@ -7,6 +7,7 @@ const QuizSchema = new entryInstance.mongoose.Schema({
   quizId: { type: Number, required: true },
   quizDetails: { type: Array, required: true },
   completed: { type: Boolean, required: true, default: false },
-  leaderboard: { type: Array, required: false }
+  leaderboard: { type: Array, required: false },
+  creator: reqString
 })
 module.exports = entryInstance.mongo.model('Quiz', QuizSchema);

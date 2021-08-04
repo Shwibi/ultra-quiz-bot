@@ -6,7 +6,7 @@ const mongoose = require(`mongoose`);
 const Message = require(`../../events/message`);
 const { Cache, Err, Main } = require(`../../utils/Utils`);
 
-const toStop = require("./start");
+const toStop = require("../Basic Quiz/start");
 const CommandName = 'Stop';
 
 class Command extends Message.Event {
