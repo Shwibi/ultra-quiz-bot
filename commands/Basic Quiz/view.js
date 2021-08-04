@@ -22,6 +22,7 @@ class Command extends Message.Event {
         super(CommandName);
         this.quizCache = {};
         this.maxPerPage = 10;
+        this.notFound = [];
     }
 
     /**
@@ -49,6 +50,8 @@ class Command extends Message.Event {
         if(!quizId || isNaN(parseInt(quizId))) return message.reply(`Please provide a valid quiz id to view!`)
 
         let quizDetails;
+
+        if(this.notFound.includes(quizId)) return message.reply(`Did not find any quiz with that id!`);
 
         // Get from cache
         if(this.quizCache[quizId]) {
@@ -106,6 +109,15 @@ class Command extends Message.Event {
         message.channel.send(Embed);
 
     }
+
+    delete(id) {
+      delete this.quizCache[id];
+      this.notFound.push(id);
+    }
+
+    add(id) {
+      this.notFound = this.notFound.filter(i => i != id);
+    }
 }
 
 const instance = new Command();
@@ -126,5 +138,6 @@ module.exports = {
     call: async (message, client) => {
         if (!instance.initiated) instance.init(client);
         instance.call(message);
-    }
+    },
+    instance
 }

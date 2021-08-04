@@ -7,6 +7,7 @@ const Message = require(`../../events/message`);
 const QuizModel = require("../../models/Quiz");
 const Start = require("../Basic Quiz/start");
 const Search = require("../Quiz Options/search");
+const View = require("../Basic Quiz/view");
 const {
     Cache,
     Err,
@@ -67,6 +68,7 @@ class Command extends Message.Event {
           )
           Start.instance.deleteQuiz(quizId);
           Search.instance.delete(quizId);
+          View.instance.delete(quizId);
         }
         else {
           message.channel.send(`You do not have the permission to delete that quiz!`);

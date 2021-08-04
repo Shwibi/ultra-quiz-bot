@@ -4,6 +4,7 @@ const Index = require(`../../index`);
 const fs = require(`fs`);
 const mongoose = require(`mongoose`);
 const Message = require(`../../events/message`);
+const View = require("../Basic Quiz/view");
 const {
   Cache,
   Err,
@@ -156,6 +157,7 @@ class Command extends Message.Event {
                       creator: message.author.id
                     })
                     waitingForQuestionsAllMessage.delete();
+                    View.instance.add(quizId);
                     message.channel.send(
                       `✅ Successfully parsed all the questions (${allQuestions.length}). The quiz id is ${quizId}. Please type \`${message.prefix}start ${quizId}\` to start this quiz.`
                     );
