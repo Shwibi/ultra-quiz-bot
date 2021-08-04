@@ -400,7 +400,7 @@ class Command extends Message.Event {
   
   deleteQuiz(id) {
     if(this.quizCache && this.quizCache[id]) {
-      delete quizCache[id];
+      delete this.quizCache[id];
     }
   }
 }
