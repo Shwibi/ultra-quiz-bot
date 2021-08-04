@@ -20,6 +20,9 @@ class Command extends Message.Event {
    */
   constructor() {
     super(CommandName);
+    this.quizzes = [];
+    this.didNotFind = `Oops! Did not find any quizzes matching that name!`;
+    this.notFound = [];
   }
 
   /**
@@ -30,9 +33,6 @@ class Command extends Message.Event {
     if (this.initiated) return;
     this.client = client;
     this.initiated = true;
-    this.quizzes = [];
-    this.didNotFind = `Oops! Did not find any quizzes matching that name!`;
-    this.notFound = [];
   }
 
   /**

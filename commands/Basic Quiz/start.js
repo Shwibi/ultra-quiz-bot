@@ -24,6 +24,11 @@ class Command extends Message.Event {
    */
   constructor() {
     super(CommandName);
+    this.disbut = Index.disbut;
+    this.needToStop = {};
+    this.running = [];
+    global.leaderboards = {};
+    this.quizCache = {};
   }
 
   /**
@@ -34,11 +39,6 @@ class Command extends Message.Event {
     if (this.initiated) return;
     this.client = client;
     this.initiated = true;
-    this.disbut = Index.disbut;
-    this.needToStop = {};
-    this.running = [];
-    global.leaderboards = {};
-    this.quizCache = {};
   }
 
   /**
