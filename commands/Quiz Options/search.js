@@ -115,6 +115,10 @@ class Command extends Message.Event {
     }
 
   }
+
+  delete(id) {
+    this.quizzes = this.quizzes.filter(q => q.quizId !== id);
+  }
 }
 
 const instance = new Command();
@@ -135,5 +139,6 @@ module.exports = {
   call: async (message, client) => {
     if (!instance.initiated) instance.init(client);
     instance.call(message);
-  }
+  },
+  instance
 }
