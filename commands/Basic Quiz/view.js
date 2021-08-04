@@ -110,24 +110,34 @@ class Command extends Message.Event {
         // msg.reactions.removeAll();
       
 
-        const collector = msg.createReactionCollector((reaction, user) => user.id == message.author.id && (reaction.emoji.name == "▶" || reaction.emoji.name == "◀"), {max: 1, time: 15000});
-        collector.on("collect", (reaction, user) => {
+        const collector = msg.createReactionCollector((reaction, user) => user.id == message.author.id && (reaction.emoji.name == "▶" || reaction.emoji.name == "◀"), {max: 1, time: 120 * 1000});
+        collector.on("collect", async (reaction, user) => {
           
-          if(user.bot) return;
+          if(user.id == this.client.user.id || user.bot) return;
 
-          reaction.remove();
+          const userReactions = msg.reactions.cache.filter(reaction => reaction.users.cache.has(message.author.id));
+
+          try {
+            for (const reaction of userReactions.values()) {
+              await reaction.users.remove(message.author.id);
+            }
+          } catch (error) {
+            console.error('Failed to remove reactions.', error);
+          }
+
 
           if(reaction.emoji.name == "◀" && pageNumber > 1) {
 
             pageNumber--;
             Embed = this.embed(pageNumber, allQuestions, Embed, totalPages);
-            
+            // if(user.id !== this.client.user.id) reaction.remove();
 
           }
 
           if(reaction.emoji.name == "▶" && pageNumber < totalPages) {
             pageNumber++;
             Embed = this.embed(pageNumber, allQuestions, Embed, totalPages);
+            // if(user.id !== this.client.user.id) reaction.remove();
             
           }
 
@@ -154,7 +164,7 @@ class Command extends Message.Event {
         // Embed.addField(`${i + 1}. ${qu.question}`, `Options: \n${optArray.join("\n")} \n\nCorrect answer: ${correctAnswer}`);
         Embed = this.addOption(Embed, i, qu, correctAnswer, optArray)
       }
-      Embed.setFooter(`Viewing page ${pageNumber}/${totalPages} | You have 15 seconds to change pages with reactions.`);
+      Embed.setFooter(`Viewing page ${pageNumber}/${totalPages} | You have 120 seconds to change pages with reactions.`);
       return Embed;
     }
 
