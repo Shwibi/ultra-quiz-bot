@@ -225,6 +225,7 @@ class Command extends Message.Event {
       };
 
     }
+    correctAnswer = correctAnswer.length > 200 ? correctAnswer.substr(0, 200) : correctAnswer;
     for (const key in optVals) {
       // QuestionEmbed.addField(key, optVals[key].name)
       const label = optVals[key].name;
@@ -306,7 +307,7 @@ class Command extends Message.Event {
         // })
         globalBoard = this.pushBoard(localLeaderboard, globalBoard);
 
-        embedMsg.edit(QuestionEmbed.setFooter("Question time ended.").setColor("GREEN").addField(`Quiz over!`, `The correct answer was ${correctAnswer}`));
+        embedMsg.edit(QuestionEmbed.setFooter("Question time ended.").setColor("GREEN").addField(`Question time ended!`, `The correct answer was ${correctAnswer}`));
         if (qd[i + 1] && !this.needToStop[message.channel.id]) {
 
           // this.askQuestion(quizId, qd, i + 1, message, callbackOnEnd);

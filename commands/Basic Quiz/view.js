@@ -96,9 +96,11 @@ class Command extends Message.Event {
 
         message.channel.send(Embed).then(msg => {
           
-          msg.react("◀").then(
-            msg.react("▶")
-          )
+          if(totalPages > 1) {
+            msg.react("◀").then(
+              msg.react("▶")
+            )
+          }
           
           this.handleReact(msg, pageNumber, totalPages, allQuestions, Embed, message)
         });
