@@ -24,7 +24,7 @@ class EntryPoint extends Main {
 	constructor(line) {
 		line = line ? `.${line}` : "";
 		super(`index` + line);
-		this.client = new Discord.Client();
+		this.client = new Discord.Client({partials: ["CHANNEL", "MESSAGE", "REACTION"]});
 		this.connectedToButton = false;
 
     // Emojis

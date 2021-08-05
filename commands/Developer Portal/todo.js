@@ -9,6 +9,9 @@ const {
   Err,
   Main
 } = require(`../../utils/Utils`);
+const {
+  remove: replace
+} = require("../../models/Guilds");
 
 const CommandName = 'ToDo';
 
@@ -35,7 +38,7 @@ class Command extends Message.Event {
    * Call this command using message
    * @param {Discord.Message} message 
    */
-  call(message) {
+  async call(message) {
 
     if (!this.initiated) return new Err(`Called ${CommandName} command tendril without message initiation!`);
 
@@ -43,20 +46,112 @@ class Command extends Message.Event {
     const commandRaw = args.shift();
     const ticketID = args.shift();
 
+    const channel = this.client.channels.cache.find(c => c.id == this.config.Dev.todo_channel);
+
+    if (["done", "off", "working", "delete"].includes(ticketID.toLowerCase())) {
+
+      let replaceBy = this.e.on;
+
+      switch (ticketID.toLowerCase()) {
+        case "done":
+          replaceBy = this.e.on;
+          break;
+        case "off":
+          replaceBy = this.e.off;
+          break;
+        case "working":
+          replaceBy = this.e.idle;
+          break;
+        case "delete":
+          replaceBy = "delete";
+          break;
+        default:
+          replaceBy = this.e.on;
+          break;
+      }
+
+
+      this.channelFetch(channel, args, replaceBy, (err) => {
+        if (err) return this.InLog(err);
+        message.channel.send(`${this.e.r} Marked ${args[0]} as ${ticketID}!`);
+      })
+
+
+
+      return;
+
+    }
+
     const todoContent = args.join(" ");
     if (!todoContent || !ticketID) return message.channel.send(`${this.e.x} Please send a todo message!`);
 
-    const toSend = `${this.e.tic}${ticketID} ***[${message.author.username}]*** - ${todoContent}`;
-    const channel = this.client.channels.cache.find(c => c.id == this.config.Dev.todo_channel);
+    const toSend = `${this.e.tic}${ticketID} ***[${message.author.username}]*** - ${todoContent} ${this.e.off}`;
     if (channel) {
       channel.send(toSend).then(
 
-        message.channel.send(`${this.e.r} Added todo with **ID ${ticketID}**!`)
+        async () => {
+          await channel.threads.create({
+            name: "testing"
+          });
+
+          message.channel.send(`${this.e.r} Added todo with **ID ${ticketID}**!`)
+        }
 
       )
     }
 
   }
+
+  async channelFetch(channel = new Discord.Channel(), args = [], replace = this.e.on, callback = () => {}) {
+    channel.messages.fetch({
+      limit: 10
+    }).then(msgs => {
+      // this.InLog(msgs);
+      msgs.forEach(msg => {
+        if (msg.partial) {
+          msg.fetch().then(
+            fullMsg => {
+              if (fullMsg.author.id == this.client.user.id && fullMsg.content.includes(`${this.e.tic}${args[0]}`)) {
+                if (replace == "delete") return fullMsg.delete();
+                fullMsg.edit(this.replace(msg, replace));
+                return;
+              }
+            }
+          ).catch(err => {
+            new Err(err, err.code || "FETCHERR", {
+              err,
+              msg,
+              msgs
+            });
+          })
+        } else {
+          if (msg.author.id == this.client.user.id && msg.content.includes(`${this.e.tic}${args[0]}`)) {
+            if (replace == "delete") return msg.delete();
+            msg.edit(this.replace(msg, replace));
+            return;
+          }
+        }
+      })
+    }).then(callback(null)).catch(err => {
+      if (err) callback(err)
+    });
+  }
+
+
+  replace(msg, replace) {
+    // return msg.content.split(this.e.off).join("").split(this.e.idle).join("").split(this.e.on).join(replace);
+    const content = msg.content;
+    if (content.includes(this.e.off)) {
+      return content.split(this.e.off).join(replace);
+    }
+    if (content.includes(this.e.on)) {
+      return content.split(this.e.on).join(replace);
+    }
+    if (content.includes(this.e.idle)) {
+      return content.split(this.e.idle).join(replace);
+    }
+  }
+
 }
 
 const instance = new Command();
