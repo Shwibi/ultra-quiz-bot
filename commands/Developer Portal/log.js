@@ -62,7 +62,7 @@ class Command extends Message.Event {
           array.push(`${this.e.remove}${addition}`);
           break;
         case "f":
-          array.push(`${this.e.mod}${addition}`);
+          array.push(`${this.e.bug2}${addition}`);
           break;
         default:
           array.push(`${this.e.dev}${addition}`);
@@ -79,10 +79,10 @@ class Command extends Message.Event {
         typeSend = this.e.yarn;
         break;
       case "build":
-        typeSend = this.e.gift;
+        typeSend = this.e.hype;
         break;
       case "v13":
-        typeSend = this.e.bug2;
+        typeSend = this.e.dev;
         break;
       default:
         typeSend = this.e.hype;
@@ -92,7 +92,7 @@ class Command extends Message.Event {
     const date = new Date();
     logChannel.send(
       `***[${date.toLocaleDateString()}@${date.toLocaleTimeString()}]*** \n\n` +
-      `${typeSend} __${title}__ \n\n` +
+      `${typeSend} __${title}__ \n` +
       array.join("\n") +
       `\n\n` +
       `===================================`
