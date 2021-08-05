@@ -85,7 +85,7 @@ class Command extends Message.Event {
         typeSend = this.e.hype;
         break;
       case "v13":
-        typeSend = this.e.dev;
+        typeSend = this.e.partner;
         break;
       default:
         typeSend = this.e.hype;
