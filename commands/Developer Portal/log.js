@@ -64,6 +64,9 @@ class Command extends Message.Event {
         case "f":
           array.push(`${this.e.bug2}${addition}`);
           break;
+        case "t":
+          array.push(`${this.e.tic}${addition}`);
+          break;
         default:
           array.push(`${this.e.dev}${addition}`);
           break;
@@ -82,7 +85,7 @@ class Command extends Message.Event {
         typeSend = this.e.hype;
         break;
       case "v13":
-        typeSend = this.e.dev;
+        typeSend = this.e.partner;
         break;
       default:
         typeSend = this.e.hype;
