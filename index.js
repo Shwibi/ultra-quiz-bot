@@ -27,6 +27,16 @@ class EntryPoint extends Main {
 		this.client = new Discord.Client();
 		this.connectedToButton = false;
 
+    // Emojis
+    this.e = {
+      "x": "<:no:752721988388126730>",
+      "r": "<:yes:752721984227508274>",
+      "tic": "<:blurpleticket:872133307574386729>",
+      "on": "<:online:752721988962746429>",
+      "off": "<:offline:752721987842998342>",
+      "idle": "<:idle:752721987855581246>"
+    }
+
 	}
 
 	/**

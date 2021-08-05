@@ -10,7 +10,7 @@ const {
   Main
 } = require(`../../utils/Utils`);
 
-const CommandName = 'CommandUseName';
+const CommandName = 'ToDo';
 
 class Command extends Message.Event {
 
@@ -39,6 +39,23 @@ class Command extends Message.Event {
 
     if (!this.initiated) return new Err(`Called ${CommandName} command tendril without message initiation!`);
 
+    const args = message.content.split(/\s/);
+    const commandRaw = args.shift();
+    const ticketID = args.shift();
+
+    const todoContent = args.join(" ");
+    if (!todoContent || !ticketID) return message.channel.send(`${this.e.x} Please send a todo message!`);
+
+    const toSend = `${this.e.tic}${ticketID} ***[${message.author.username}]*** - ${todoContent}`;
+    const channel = this.client.channels.cache.find(c => c.id == this.config.Dev.todo_channel);
+    if (channel) {
+      channel.send(toSend).then(
+
+        message.channel.send(`${this.e.r} Added todo with **ID ${ticketID}**!`)
+
+      )
+    }
+
   }
 }
 
@@ -52,7 +69,7 @@ module.exports = {
   ignore: false,
   guildOnly: false,
   aliases: [],
-  permissions: ['SEND_MESSAGES'],
+  permissions: ['DEV'],
   cooldown: 3,
   color: 'RANDOM',
   extraFields: [],
