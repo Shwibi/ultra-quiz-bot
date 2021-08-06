@@ -32,7 +32,7 @@ class Command extends Message.Event {
    * Call this command using message
    * @param {Discord.Message} message
    */
-  call(message) {
+  async call(message) {
     if (!this.initiated)
       return new Err(
         `Called ${CommandName} command tendril without message initiation!`
@@ -42,10 +42,14 @@ class Command extends Message.Event {
     const commandRaw = args.shift();
 
     if (args[0] == "stop") {
-      if (this.endSession(message)) {
+      this.InLog(this.sessions);
+      if (this.endSession(message, this.sessions.length)) {
         //do nothing?
       } else message.channel.send(`No session going on!`);
       return;
+    } else {
+      if (this.inSession.includes(this.sessions.length))
+        return message.channel.send(`Already in a session!`);
     }
     const defaultTime = this.config.Dev.time ?? 120;
     const time = args[0]
@@ -54,14 +58,16 @@ class Command extends Message.Event {
         : defaultTime * 1000
       : defaultTime * 1000;
 
-    const sessionID = this.sessions[this.sessions.length - 1];
+    const sessionID = this.sessions.length + 1;
 
     if (this.startSession(time, message, sessionID)) {
       const collector = new Discord.MessageCollector(
         message.channel,
         (u) =>
           u.author.id == message.author.id &&
-          this.inSession.includes(sessionID),
+          this.inSession.includes(sessionID) &&
+          !u.content.startsWith("??") &&
+          !u.content.startsWith("d?"),
         { time: time }
       );
       collector.on("collect", (msg) => {
@@ -127,13 +133,11 @@ class Command extends Message.Event {
           }
         ).Log()
       );
-
-      const sessionId = this.sessions.length + 1;
-      this.sessions.push(sessionId);
+      this.sessions.push(sessionID);
       message.channel.send(
         `Started console session for ${
           receivedTime / 1000
-        } second(s)! **Session ID: ${sessionId}**`
+        } second(s)! **Session ID: ${sessionID}**`
       );
       setTimeout(() => {
         this.endSession(message);
