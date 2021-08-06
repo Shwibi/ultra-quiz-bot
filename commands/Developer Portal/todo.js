@@ -109,9 +109,9 @@ class Command extends Message.Event {
   async channelFetch(channel = new Discord.Channel(), args = [], replace = this.e.on, callback = () => {}) {
     channel.messages.fetch({
       limit: 10
-    }).then(msgs => {
+    }).then(async msgs => {
       // this.InLog(msgs);
-      msgs.forEach(msg => {
+      msgs.forEach(async msg => {
         if (msg.partial) {
           msg.fetch().then(
             fullMsg => {
