@@ -114,7 +114,7 @@ class Command extends Message.Event {
       msgs.forEach(async msg => {
         if (msg.partial) {
           msg.fetch().then(
-            fullMsg => {
+            async fullMsg => {
               if (fullMsg.author.id == this.client.user.id && fullMsg.content.includes(`${this.e.tic}${args[0]}`)) {
                 if (replace == "delete") {
                   this.delete(msg);
