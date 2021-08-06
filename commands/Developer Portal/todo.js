@@ -89,12 +89,16 @@ class Command extends Message.Event {
     if (channel) {
       channel.send(toSend).then(
 
-        async () => {
-          await channel.threads.create({
-            name: "testing"
+        async (msgSent) => {
+          const thread = await channel.threads?.create({
+            name: ticketID
           });
-
-          message.channel.send(`${this.e.r} Added todo with **ID ${ticketID}**!`)
+          if(thread) {
+            await thread.members?.add(message.author.id);
+            await thread.send(msgSent.content);
+          }
+          this.delete(message);
+          message.channel.send(`${this.e.r} Added todo with **ID ${ticketID}**!`).then(msg => this.delete(msg, 5));
         }
 
       )
@@ -112,7 +116,28 @@ class Command extends Message.Event {
           msg.fetch().then(
             fullMsg => {
               if (fullMsg.author.id == this.client.user.id && fullMsg.content.includes(`${this.e.tic}${args[0]}`)) {
-                if (replace == "delete") return fullMsg.delete();
+                if (replace == "delete") {
+                  this.delete(msg);
+                  const ticketId = args[0];
+                  const thread = await channel.threads?.cache.find(th => th.name.includes(ticketId));
+                  if(thread) {
+                    await thread.delete();
+                  }
+                }
+                if(replace == this.e.on) {
+                  const ticketId = args[0];
+                  const thread = await channel.threads?.cache.find(th => th.name.includes(ticketId));
+                  if(thread) {
+                    await thread.setArchived(true);
+                  }
+                }
+                if(replace == this.e.off || replace == this.e.idle) {
+                  const ticketId = args[0];
+                  const thread = await channel.threads?.cache.find(th => th.name.includes(ticketId));
+                  if(thread) {
+                    await thread.setArchived(false);
+                  }
+                }
                 fullMsg.edit(this.replace(msg, replace));
                 return;
               }
@@ -126,7 +151,28 @@ class Command extends Message.Event {
           })
         } else {
           if (msg.author.id == this.client.user.id && msg.content.includes(`${this.e.tic}${args[0]}`)) {
-            if (replace == "delete") return msg.delete();
+            if (replace == "delete") {
+              this.delete(msg);
+              const ticketId = args[0];
+              const thread = await channel.threads?.cache.find(th => th.name.includes(ticketId));
+              if(thread) {
+                await thread.delete();
+              }
+            }
+            if(replace == this.e.on) {
+              const ticketId = args[0];
+              const thread = await channel.threads?.cache.find(th => th.name.includes(ticketId));
+              if(thread) {
+                await thread.setArchived(true);
+              }
+            }
+            if(replace == this.e.off || replace == this.e.idle) {
+              const ticketId = args[0];
+              const thread = await channel.threads?.cache.find(th => th.name.includes(ticketId));
+              if(thread) {
+                await thread.setArchived(false);
+              }
+            }
             msg.edit(this.replace(msg, replace));
             return;
           }
