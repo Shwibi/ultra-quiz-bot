@@ -39,21 +39,13 @@ class Command extends Message.Event {
 
     const args = message.content.split(/\s/);
     const commandRaw = args.shift();
-    const raw = args.shift();
+    const raw = args[0];
 
     const channel = this.client.channels.cache.find(
       (c) => c.id == this.config.Dev.todo_channel
     );
 
-    let ticketID = 0;
-    channel.messages.fetch({ limit: 10 }).then((collected) => {
-      collected.forEach((m) => {
-        const ticket = m.content.split(/\s/).shift();
-        const fetchTicketId = ticket.split(this.e.tic).join("").trim();
-        const parseId = parseInt(fetchTicketId);
-        if (parseId > ticketID) ticketID = fetchTicketId;
-      });
-    });
+    let ticketID = raw;
 
     if (["done", "off", "working", "delete"].includes(ticketID.toLowerCase())) {
       let replaceBy = this.e.on;
@@ -76,34 +68,53 @@ class Command extends Message.Event {
           break;
       }
 
-      this.channelFetch(channel, args, replaceBy, (err) => {
+      this.channelFetch(channel, args.slice(1), replaceBy, (err) => {
         if (err) return this.InLog(err);
-        message.channel.send(`${this.e.r} Marked ${args[0]} as ${ticketID}!`);
+        this.delete(message);
+        message.channel
+          .send(`${this.e.r} Marked ${args[1]} as ${ticketID}!`)
+          .then((ms) => this.delete(ms, 5));
       });
 
       return;
     }
 
-    const todoContent = args.join(" ");
-    if (!todoContent || !ticketID)
-      return message.channel.send(`${this.e.x} Please send a todo message!`);
-
-    const toSend = `${this.e.tic}${ticketID} ***[${message.author.username}]*** - ${todoContent} ${this.e.off}`;
-    if (channel) {
-      channel.send(toSend).then(async (msgSent) => {
-        const thread = await channel.threads?.create({
-          name: ticketID,
-        });
-        if (thread) {
-          await thread.members?.add(message.author.id);
-          await thread.send(msgSent.content);
+    channel.messages.fetch({ limit: 10 }).then((collected) => {
+      let store = 0;
+      collected.forEach((m) => {
+        const ticket = m.content.split(/\s/).shift();
+        const fetchTicketId = ticket.split(this.e.tic).join("").trim();
+        this.InLog({ ticket, fetchTicketId });
+        const parseId = parseInt(fetchTicketId);
+        if (parseId > store) {
+          ticketID = this.padNum(parseId + 1, 3);
+          store = parseId;
         }
-        this.delete(message);
-        message.channel
-          .send(`${this.e.r} Added todo with **ID ${ticketID}**!`)
-          .then((msg) => this.delete(msg, 5));
       });
-    }
+    });
+
+    setTimeout(async () => {
+      const todoContent = args.join(" ");
+      if (!todoContent || !ticketID)
+        return message.channel.send(`${this.e.x} Please send a todo message!`);
+
+      const toSend = `${this.e.tic}${ticketID} ***[${message.author.username}]*** - ${todoContent} ${this.e.off}`;
+      if (channel) {
+        channel.send(toSend).then(async (msgSent) => {
+          const thread = await channel.threads?.create({
+            name: ticketID,
+          });
+          if (thread) {
+            await thread.members?.add(message.author.id);
+            await thread.send(msgSent.content);
+          }
+          this.delete(message);
+          message.channel
+            .send(`${this.e.r} Added todo with **ID ${ticketID}**!`)
+            .then((msg) => this.delete(msg, 5));
+        });
+      }
+    }, 2000);
   }
 
   async channelFetch(
@@ -223,6 +234,12 @@ class Command extends Message.Event {
     if (content.includes(this.e.idle)) {
       return content.split(this.e.idle).join(replace);
     }
+  }
+
+  padNum(num, size) {
+    let s = num + "";
+    while (s.length < size) s = "0" + s;
+    return s;
   }
 }
 
