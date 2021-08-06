@@ -143,6 +143,10 @@ class Event extends Index.EntryPoint {
 
 
   }
+
+  delete(message, timeout = 1) {
+    if(message?.deletable) message.delete({timeout: timeout * 1000});
+  }
 }
 
 const Instance = new Event();
