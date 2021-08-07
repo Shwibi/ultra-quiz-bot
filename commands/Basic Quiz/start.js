@@ -234,6 +234,11 @@ class Command extends Message.Event {
                 );
 
               message.channel.send(leaderBoardEmbed);
+              await guildDB.updateOne({
+                $push: {
+                  cache: leaderBoardEmbed,
+                },
+              });
               if (!this.stash[message.guild.id]) {
                 const stack = new Stack.Stack(
                   message.guild.id + "-leaderboard"
@@ -247,7 +252,7 @@ class Command extends Message.Event {
               try {
                 message.member.send(leaderBoardEmbed);
               } catch (error) {
-                if (error) this.InLog({ error });
+                if (error) this.InLog(error);
               }
             });
           }

@@ -22,7 +22,6 @@ const Guilds = require("../../models/Guilds");
 const Message = require(`../../events/message`);
 const Start = require("./start");
 const { Cache, Err, Main } = require(`../../utils/Utils`);
-const Stack = require("shwi-js/Stack/Stack");
 const { IsInteger } = require("shwi-js");
 
 const CommandName = "LeaderBoard";
@@ -69,6 +68,39 @@ class Command extends Message.Event {
         ? toSendBoard
         : `${this.e.x} No quiz found with ${args[2] ?? "0"} rollbacks!`;
       message.channel.send(toSend);
+      return;
+    }
+
+    if (args[1] == "fetch") {
+      if (!message.isDev) return;
+      const guildDb = await Guilds.findOne({ guildId: message.guild.id });
+      if (!guildDb) {
+        message.channel.send(`${this.e.x} Error!`);
+        this.InLog(
+          "Error while fetching guild db for " +
+            message.guild.name +
+            " Id " +
+            message.guild.id
+        );
+        return;
+      }
+
+      const allQuizzes = await guildDb.get("cache");
+      // this.InLog(allQuizzes);
+      if (allQuizzes.length == 0) {
+        message.channel.send(`${this.e.x} No leaderboards!`);
+        this.InLog(
+          `No leaderboards found for guild ${message.guild.name} with ID ${message.guild.id}`
+        );
+        return;
+      }
+
+      const number = args[2] ? parseInt(args[2]) : allQuizzes.length - 1;
+      this.InLog({ number });
+      const toSend = allQuizzes[number] ? allQuizzes[number] : false;
+      this.InLog({ q: allQuizzes[0] });
+      if (!toSend) return message.channel.send(`${this.e.x} Not found`);
+      message.channel.send({ embed: toSend });
       return;
     }
 
