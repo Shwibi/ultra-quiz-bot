@@ -144,10 +144,10 @@ const instance = new Command();
 // Exports
 module.exports = {
   name: CommandName.toLowerCase(),
-  description: CommandName,
+  description: `See the guild leaderboard or local leaderboard!`,
   useName: CommandName,
   ignore: false,
-  guildOnly: false,
+  guildOnly: true,
   aliases: ["lbd"],
   permissions: ["SEND_MESSAGES"],
   cooldown: 3,
@@ -162,6 +162,16 @@ module.exports = {
       name: "Number?",
       value:
         "Number of quizzes to roll back to. Defaults to 0, i.e. returns latest quiz.",
+    },
+    {
+      name: "Example 1",
+      value:
+        "`<prefix>leaderboard local` -> This will return the latest local quiz leaderboard",
+    },
+    {
+      name: "Example 2",
+      value:
+        "`<prefix>leaderboard local 2` -> This will return a quiz that was conducted 2 quizzes before latest. So if quizzes were conducted as `QuizA -> QuizB -> QuizC -> QuizD` This would return leaderboard for `QuizB`",
     },
   ],
   help: `<prefix>leaderboard [local?] [number?]`,
