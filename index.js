@@ -135,9 +135,19 @@ class EntryPoint extends Main {
     this.dev_logs = this.client.channels.cache.get(this.config.Dev.dev_logs);
     if (this.client && this.dev_logs) {
       message.forEach((msg) => {
-        this.dev_logs.send(JSON.stringify(msg, null, 4));
+        this.dev_logs.send(
+          `==================\n\n*[${new Date().toLocaleString()}]* ` +
+            JSON.stringify(msg, null, 4) +
+            "\n\n=================="
+        );
       });
     }
+  }
+
+  devLog(...message) {
+    if (!this.dev_logs)
+      this.dev_logs = this.client.channels.cache.get(this.config.Dev.dev_logs);
+    this.InLog(...message);
   }
 
   Test() {}

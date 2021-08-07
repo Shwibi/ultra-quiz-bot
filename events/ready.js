@@ -29,11 +29,13 @@ class Ready extends Index.EntryPoint {
     );
     this.dev_logs = this.client.channels.cache.get(this.config.Dev.dev_logs);
 
-    if (this.dev_logs) {
-      this.dev_logs.send(
-        `${this.e.cookie} **Online!** At: ${new Date().toLocaleString()}`
-      );
-    }
+    this.devLog(
+      `${
+        this.e.cookie
+      } **Online!** At: ${new Date().toLocaleString()} | Platform: ${
+        process.platform
+      } | P-V: ${process.version} | Path: ${process.execPath}`
+    );
   }
 }
 
