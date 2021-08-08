@@ -9,7 +9,7 @@ const { Cache, Err, Main, Stack } = require(`../../utils/Utils`);
 const QuizModel = require("../../models/Quiz");
 const Guilds = require("../../models/Guilds");
 
-const timeBetweenQuestions = 5;
+const TIME_BETWEEN_QUESTIONS = 5;
 
 const CommandName = "Start";
 
@@ -27,6 +27,15 @@ class Command extends Message.Event {
 		this.stash = {
 			id: new Stack.Stack("id"),
 		};
+		this.inSessionGuilds = {};
+
+		setInterval(() => {
+			this.quizCache = {};
+			this.stash = {
+				id: new Stack.Stack("id"),
+			};
+			global.leaderboards = {};
+		}, this.config.Bot.reset_timer);
 	}
 
 	/**
@@ -67,6 +76,12 @@ class Command extends Message.Event {
 		if (!id)
 			return message.reply(`Please provide the id of the quiz to start!`);
 
+		const timeBetweenQuestions = args[2]
+			? !isNaN(parseInt(args[2]))
+				? parseInt(args[2])
+				: TIME_BETWEEN_QUESTIONS
+			: TIME_BETWEEN_QUESTIONS;
+
 		let quizFromDb;
 
 		if (this.quizCache[id]) {
@@ -91,9 +106,9 @@ class Command extends Message.Event {
 		if (this.banList.includes(message.author.id)) return message.delete();
 
 		let pushToGB = true;
-		if (args[2] && args[2] == "false") pushToGB = false;
+		if (args[3] && args[3] == "false") pushToGB = false;
 		const completedQuizzes = await guildDB.get("completed");
-		if (completedQuizzes.includes(id) && args[2] !== "force") pushToGB = false;
+		if (completedQuizzes.includes(id) && args[3] !== "force") pushToGB = false;
 
 		message.channel
 			.send(`The quiz **${quizName}** starts in ${startsIn} seconds.`)
@@ -112,161 +127,186 @@ class Command extends Message.Event {
 					async () => {
 						this.needToStop[message.channel.id] = false;
 						this.running.push(message.channel.id);
+						if (this.inSessionGuilds[message.guild.id])
+							this.inSessionGuilds[message.guild.id].push(id);
+						else this.inSessionGuilds[message.guild.id] = [id];
 
 						msg.delete();
-						this.askQuestion(id, qd, 0, message, async (globalBoard) => {
-							this.running = this.running.filter(
-								(eachChannel) => eachChannel !== message.channel.id
-							);
+						this.askQuestion(
+							id,
+							qd,
+							0,
+							message,
+							timeBetweenQuestions,
+							async (globalBoard) => {
+								this.running = this.running.filter(
+									(eachChannel) => eachChannel !== message.channel.id
+								);
+								this.inSessionGuilds[message.guild.id] = this.inSessionGuilds[
+									message.guild.id
+								].filter((quiz_id) => quiz_id !== id);
 
-							await guildDB.updateOne({
-								$push: {
-									completed: id,
-								},
-							});
+								await guildDB.updateOne({
+									$push: {
+										completed: id,
+									},
+								});
 
-							message.channel.send(`The quiz **${quizName}** ended!`);
-							this.InLog(globalBoard);
-							const sortedByTime = globalBoard.sort((a, b) => a.time - b.time);
-							const sortedByCorrect = sortedByTime.sort(
-								(a, b) => b.count - a.count
-							);
-
-							this.InLog(sortedByCorrect);
-
-							if (pushToGB) {
-								// overall leaderboard
-								let guildBoard = (await guildDB.get("leaderboard")) || [];
-								// guildBoard.push(...sortedByCorrect);
-								guildBoard = this.pushBoard(sortedByCorrect, guildBoard, true);
-								const GBsortedByTime = guildBoard.sort(
+								message.channel.send(`The quiz **${quizName}** ended!`);
+								this.InLog(globalBoard);
+								const sortedByTime = globalBoard.sort(
 									(a, b) => a.time - b.time
 								);
-								const GBsortedByCorrect = GBsortedByTime.sort(
+								const sortedByCorrect = sortedByTime.sort(
 									(a, b) => b.count - a.count
 								);
-								await guildDB.updateOne({
-									leaderboard: GBsortedByCorrect,
-								});
-								global.leaderboards[message.guild.id] = GBsortedByCorrect;
 
-								// Send guildBoard to guild board channel
-								const guildBoardEmbed = new Discord.MessageEmbed()
-									.setTitle("Guild board")
+								this.InLog(sortedByCorrect);
+
+								if (pushToGB) {
+									// overall leaderboard
+									let guildBoard = (await guildDB.get("leaderboard")) || [];
+									// guildBoard.push(...sortedByCorrect);
+									guildBoard = this.pushBoard(
+										sortedByCorrect,
+										guildBoard,
+										true
+									);
+									const GBsortedByTime = guildBoard.sort(
+										(a, b) => a.time - b.time
+									);
+									const GBsortedByCorrect = GBsortedByTime.sort(
+										(a, b) => b.count - a.count
+									);
+									await guildDB.updateOne({
+										leaderboard: GBsortedByCorrect,
+									});
+									global.leaderboards[message.guild.id] = GBsortedByCorrect;
+
+									// Send guildBoard to guild board channel
+									const guildBoardEmbed = new Discord.MessageEmbed()
+										.setTitle("Guild board")
+										.setColor("RANDOM")
+										.setTimestamp()
+										.setFooter(`Total users: ${GBsortedByCorrect.length}`);
+									const maxGB =
+										GBsortedByCorrect.length < 11
+											? GBsortedByCorrect.length
+											: 10;
+									for (let lbgGB = 0; lbgGB < maxGB; lbgGB++) {
+										const userId = GBsortedByCorrect[lbgGB].userId;
+										const user =
+											this.client.users.cache.find((u) => u.id == userId) ||
+											message.guild.members.cache.find((u) => u.id == userId);
+										guildBoardEmbed.addField(
+											`Rank ${lbgGB + 1}. ${user.username}`,
+											`<@${userId}> Correct: ${
+												GBsortedByCorrect[lbgGB].count
+											} | Time: ${
+												GBsortedByCorrect[lbgGB].time / 1000
+											} second(s)`
+										);
+										if (lbgGB == 0) {
+											guildBoardEmbed.setThumbnail(user.avatarURL());
+										}
+									}
+
+									const sendToChannelId = await guildDB.get(
+										"guildBoardChannel"
+									);
+									if (sendToChannelId) {
+										const boardChannel = message.guild.channels.cache.find(
+											(ch) => ch.id == sendToChannelId
+										);
+										if (boardChannel) {
+											boardChannel.send(guildBoardEmbed);
+										}
+									}
+
+									if (args[4] && args[4] == "dm") {
+										message.member.send(guildBoardEmbed);
+									}
+								}
+
+								const leaderBoardEmbed = new Discord.MessageEmbed()
+									.setTitle(`Leaderboard for quiz **${quizName}**`)
 									.setColor("RANDOM")
 									.setTimestamp()
-									.setFooter(`Total users: ${GBsortedByCorrect.length}`);
-								const maxGB =
-									GBsortedByCorrect.length < 11 ? GBsortedByCorrect.length : 10;
-								for (let lbgGB = 0; lbgGB < maxGB; lbgGB++) {
-									const userId = GBsortedByCorrect[lbgGB].userId;
+									.setFooter(
+										`Total users: ${sortedByCorrect.length} | If you aren't in the leaderboards, check your dms. (You need to enable dms if you have them disabled)`
+									);
+								const max =
+									sortedByCorrect.length < 11 ? sortedByCorrect.length : 10;
+								sortedByCorrect.forEach((userInBoard) => {
+									const userId = userInBoard.userId;
 									const user =
 										this.client.users.cache.find((u) => u.id == userId) ||
 										message.guild.members.cache.find((u) => u.id == userId);
-									guildBoardEmbed.addField(
-										`Rank ${lbgGB + 1}. ${user.username}`,
+									const userEmbed = new Discord.MessageEmbed()
+										.setAuthor(user.username, user.avatarURL({ dynamic: true }))
+										.setTitle(`Quiz Results for **${quizName}**!`)
+										.setDescription(
+											`You got **${
+												userInBoard.count
+											} correct** out of a total of ${
+												qd.length
+											} questions! Time taken: ${
+												userInBoard.time / 1000
+											} second(s)`
+										)
+										.setColor("RANDOM")
+										.setFooter(
+											`Check **#${message.channel.name}** in **${message.guild.name}** for quiz leaderboard!`
+										)
+										.setTimestamp();
+
+									user.send(userEmbed);
+								});
+
+								for (let lbdU = 0; lbdU < max; lbdU++) {
+									const userId = sortedByCorrect[lbdU].userId;
+									const user =
+										this.client.users.cache.find((u) => u.id == userId) ||
+										message.guild.members.cache.find((u) => u.id == userId);
+									leaderBoardEmbed.addField(
+										`Rank ${lbdU + 1}. ${user.username}`,
 										`<@${userId}> Correct: ${
-											GBsortedByCorrect[lbgGB].count
-										} | Time: ${GBsortedByCorrect[lbgGB].time / 1000} second(s)`
+											sortedByCorrect[lbdU].count
+										} | Time: ${sortedByCorrect[lbdU].time / 1000} second(s)`
 									);
-									if (lbgGB == 0) {
-										guildBoardEmbed.setThumbnail(user.avatarURL());
+									if (lbdU == 0) {
+										leaderBoardEmbed.setThumbnail(user.avatarURL());
 									}
 								}
-
-								const sendToChannelId = await guildDB.get("guildBoardChannel");
-								if (sendToChannelId) {
-									const boardChannel = message.guild.channels.cache.find(
-										(ch) => ch.id == sendToChannelId
+								if (sortedByCorrect.length == 0)
+									leaderBoardEmbed.addField(
+										`Whooopsy!`,
+										"Looks like no one got any questions in this quiz correct :("
 									);
-									if (boardChannel) {
-										boardChannel.send(guildBoardEmbed);
-									}
+
+								message.channel.send(leaderBoardEmbed);
+								await guildDB.updateOne({
+									$push: {
+										cache: leaderBoardEmbed,
+									},
+								});
+								if (!this.stash[message.guild.id]) {
+									const stack = new Stack.Stack(
+										message.guild.id + "-leaderboard"
+									);
+									stack.push(leaderBoardEmbed);
+									this.stash[message.guild.id] = stack;
+								} else {
+									this.stash[message.guild.id].push(leaderBoardEmbed);
 								}
 
-								if (args[3] && args[3] == "dm") {
-									message.member.send(guildBoardEmbed);
+								try {
+									message.member.send(leaderBoardEmbed);
+								} catch (error) {
+									if (error) this.InLog(error);
 								}
 							}
-
-							const leaderBoardEmbed = new Discord.MessageEmbed()
-								.setTitle(`Leaderboard for quiz **${quizName}**`)
-								.setColor("RANDOM")
-								.setTimestamp()
-								.setFooter(
-									`Total users: ${sortedByCorrect.length} | If you aren't in the leaderboards, check your dms. (You need to enable dms if you have them disabled)`
-								);
-							const max =
-								sortedByCorrect.length < 11 ? sortedByCorrect.length : 10;
-							sortedByCorrect.forEach((userInBoard) => {
-								const userId = userInBoard.userId;
-								const user =
-									this.client.users.cache.find((u) => u.id == userId) ||
-									message.guild.members.cache.find((u) => u.id == userId);
-								const userEmbed = new Discord.MessageEmbed()
-									.setAuthor(user.username, user.avatarURL({ dynamic: true }))
-									.setTitle(`Quiz Results for **${quizName}**!`)
-									.setDescription(
-										`You got **${
-											userInBoard.count
-										} correct** out of a total of ${
-											qd.length
-										} questions! Time taken: ${
-											userInBoard.time / 1000
-										} second(s)`
-									)
-									.setColor("RANDOM")
-									.setFooter(
-										`Check **#${message.channel.name}** in **${message.guild.name}** for quiz leaderboard!`
-									)
-									.setTimestamp();
-
-								user.send(userEmbed);
-							});
-
-							for (let lbdU = 0; lbdU < max; lbdU++) {
-								const userId = sortedByCorrect[lbdU].userId;
-								const user =
-									this.client.users.cache.find((u) => u.id == userId) ||
-									message.guild.members.cache.find((u) => u.id == userId);
-								leaderBoardEmbed.addField(
-									`Rank ${lbdU + 1}. ${user.username}`,
-									`<@${userId}> Correct: ${
-										sortedByCorrect[lbdU].count
-									} | Time: ${sortedByCorrect[lbdU].time / 1000} second(s)`
-								);
-								if (lbdU == 0) {
-									leaderBoardEmbed.setThumbnail(user.avatarURL());
-								}
-							}
-							if (sortedByCorrect.length == 0)
-								leaderBoardEmbed.addField(
-									`Whooopsy!`,
-									"Looks like no one got any questions in this quiz correct :("
-								);
-
-							message.channel.send(leaderBoardEmbed);
-							await guildDB.updateOne({
-								$push: {
-									cache: leaderBoardEmbed,
-								},
-							});
-							if (!this.stash[message.guild.id]) {
-								const stack = new Stack.Stack(
-									message.guild.id + "-leaderboard"
-								);
-								stack.push(leaderBoardEmbed);
-								this.stash[message.guild.id] = stack;
-							} else {
-								this.stash[message.guild.id].push(leaderBoardEmbed);
-							}
-
-							try {
-								message.member.send(leaderBoardEmbed);
-							} catch (error) {
-								if (error) this.InLog(error);
-							}
-						});
+						);
 					}
 				);
 			});
@@ -277,6 +317,7 @@ class Command extends Message.Event {
 		qd,
 		i,
 		message,
+		timeBetweenQuestions,
 		callbackOnEnd = (leaderboard) => {},
 		globalBoard = []
 	) {
@@ -419,6 +460,7 @@ class Command extends Message.Event {
 									qd,
 									i + 1,
 									message,
+									timeBetweenQuestions,
 									callbackOnEnd,
 									globalBoard
 								);
@@ -548,7 +590,7 @@ module.exports = {
 				"`??start 5 15 true dm` This will start the quiz with the id **5** in **15 seconds** and add it to guild leaderboard if it does not exist, it will also dm the user with the server leaderboard after the quiz.\n`??start 5 10 force dm` This will start the quiz with id **5** in **15 seconds** and add it to server leaderboard even if it already exists, then it will dm the user with the server leaderboard after the quiz has ended.",
 		},
 	],
-	help: "Start a new quiz using the quiz ID you got after creating the quiz. Format: `<prefix>start <id> [time in seconds] [add in server board: true/false/force] [dm the global board: dm]`",
+	help: "Start a new quiz using the quiz ID you got after creating the quiz. Format: `<prefix>start <id> [time in seconds] [time between questions in seconds (default 5 seconds)] [add in server board: true/false/force] [dm the global board: dm]`",
 	call: async (message, client) => {
 		if (!instance.initiated) instance.init(client);
 		instance.call(message);
