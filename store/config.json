@@ -2,7 +2,8 @@
 	"Bot": {
 		"prefix": "??",
 		"devs": ["700328450270953503"],
-		"invite": "https://discord.com/api/oauth2/authorize?client_id=870329762722238505&permissions=122675391568&redirect_uri=https%3A%2F%2Fwww.discord.com%2Fapp&response_type=code&scope=guilds%20applications.commands%20bot%20messages.read"
+		"invite": "https://discord.com/api/oauth2/authorize?client_id=870329762722238505&permissions=122675391568&redirect_uri=https%3A%2F%2Fwww.discord.com%2Fapp&response_type=code&scope=guilds%20applications.commands%20bot%20messages.read",
+		"reset_timer": 18000000
 	},
 	"Dev": {
 		"quiz": {
