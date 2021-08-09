@@ -34,7 +34,7 @@ class EntryPoint extends Main {
 		this.e = {
 			x: "<:no:752721988388126730>",
 			r: "<:yes:752721984227508274>",
-			tic: "<:blurpleticket:872133307574386729>",
+			tic: "<:blurpleticket:874161306838638592>",
 			on: "<:online:752721988962746429>",
 			off: "<:offline:752721987842998342>",
 			idle: "<:idle:752721987855581246>",
@@ -42,7 +42,7 @@ class EntryPoint extends Main {
 			dnd: "<:dnd:752721981245358091>",
 			bug1: "<:bughunter1:872841410561318952>",
 			bug2: "<:bughunter2:872841411119169576>",
-			hype: "<:hypesquad:872841411660247070>",
+			hype: "<:brilliance:874161191520460840>",
 			mod: "<:mod:752721983342379028>",
 			support: "<:blurplesupport:872133307742167080>",
 			line: "<:blurpleline:872133307733778462>",
