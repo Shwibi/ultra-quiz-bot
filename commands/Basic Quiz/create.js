@@ -141,7 +141,9 @@ class Command extends Message.Event {
 													this.InLog(err.info);
 													this.delete(waitingForQuestionsAllMessage);
 													// this.delete(allQuestionsCollected);
-													message.channel.send(err.message);
+													message.channel.send(
+														`${this.e.syntac} ${err.message}`
+													);
 													return;
 												}
 												// let quizId;
@@ -176,7 +178,7 @@ class Command extends Message.Event {
 												});
 												View.instance.add(quizId);
 												message.channel.send(
-													`✅ Successfully parsed all the questions (${allQuestions.length}). The quiz id is ${quizId}. Please type \`${message.prefix}start ${quizId}\` to start this quiz.`
+													`${this.e.cool} Successfully parsed all the questions (${allQuestions.length}). The quiz id is ${quizId}. Please type \`${message.prefix}start ${quizId}\` to start this quiz.`
 												);
 												const configChannel = this.client.channels.cache.find(
 													(ch) => ch.id == this.config.Dev.quiz.log_channel
@@ -215,7 +217,7 @@ class Command extends Message.Event {
 								allQuestionsCollector.on("end", (collected) => {
 									if (collected.size == 0) {
 										waitingForQuestionsAllMessage.edit(
-											`❌ Timed out and cancelled! Please try again!`
+											`${this.e.x} Timed out and cancelled! Please try again!`
 										);
 									}
 								});
@@ -228,7 +230,7 @@ class Command extends Message.Event {
 				initialCollector.on("end", (collected) => {
 					if (collected.size == 0)
 						initialMessage.edit(
-							`❌ Timed out and cancelled! Please try again!`
+							`${this.e.x} Timed out and cancelled! Please try again!`
 						);
 				});
 			});
