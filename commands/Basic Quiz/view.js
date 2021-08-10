@@ -211,6 +211,7 @@ class Command extends Message.Event {
 			"Options: \n" +
 			optArray.join("\n") +
 			`\n\nCorrect answer: ${correctAnswer}`;
+
 		let field = allOptions;
 		let question = `${i + 1}. ${qu.question}`;
 		if (question.length > 250) {
@@ -220,6 +221,7 @@ class Command extends Message.Event {
 			)} \n${allOptions}`;
 			question = question.substr(0, 250);
 		}
+		if (qu.image) field += `[**View image**](${qu.image})`;
 		Embed.addField(question, field);
 		return Embed;
 	}
