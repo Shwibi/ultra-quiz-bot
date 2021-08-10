@@ -14,6 +14,7 @@ const { Cache, Err, Main, msToTime } = require(`../../utils/Utils`);
 const { Qm } = require("../../managers/QuizManager");
 
 const UPDATES = `
+\`10/08/2021@4\` - [Social] More emojis!
 \`10/08/2021@3\` - [Dev] Fixed console
 \`10/08/2021@2\` - [Social] Let the user know what the actual required arguments are when creating a quiz
 \`10/08/2021@1\` - [Feature] Added "info" command, QuizManager(dev), handled error logging(dev)
@@ -63,27 +64,39 @@ class Command extends Message.Event {
 			.setFooter(`Use ${message.prefix}help to get help with the commands!`);
 
 		// Set client ws ping
-		InformationEmbed.addField(`Ping`, msToTime(this.client.ws.ping), true);
+		InformationEmbed.addField(
+			`${this.e.ohno} Ping`,
+			msToTime(this.client.ws.ping),
+			true
+		);
 
 		// Get number of guilds
 		InformationEmbed.addField(
-			`Guilds served`,
+			`${this.e.hype} Guilds served`,
 			this.client.guilds.cache.size,
 			true
 		);
 
 		// Get number of users
-		InformationEmbed.addField(`Users`, this.client.users.cache.size, true);
+		InformationEmbed.addField(
+			`${this.e.cozy} Users`,
+			this.client.users.cache.size,
+			true
+		);
 
 		// Total number of quizzes
 		const totalQuizzes = await Qm.size();
 		if (!isNaN(totalQuizzes))
-			InformationEmbed.addField(`Number of quizzes`, totalQuizzes, true);
+			InformationEmbed.addField(
+				`${this.e.partner} Number of quizzes`,
+				totalQuizzes,
+				true
+			);
 		else this.InLog(totalQuizzes);
 
 		// Uptime
 		InformationEmbed.addField(
-			`Uptime from last update`,
+			`${this.e.cool} Uptime from last update`,
 			msToTime(this.client.uptime),
 			true
 		);
@@ -96,10 +109,21 @@ class Command extends Message.Event {
 			RawDevs.push(Dev);
 			AllDevs.push(`${Dev.tag}: <@${Dev.id}>`);
 		});
-		InformationEmbed.addField(`Developers`, AllDevs.join(", \n"));
+		InformationEmbed.addField(
+			`${this.e.dev} Developers`,
+			AllDevs.join(", \n"),
+			true
+		);
 		InformationEmbed.setFooter(
 			InformationEmbed.footer.text,
 			RawDevs[0].avatarURL({ dynamic: true })
+		);
+
+		// Invite and support
+		InformationEmbed.addField(
+			`${this.e.link} Other important stuff`,
+			`[Support Server](${this.config.Bot.support}) \n[Invite me!](${this.config.Bot.invite})`,
+			true
 		);
 
 		// Updates

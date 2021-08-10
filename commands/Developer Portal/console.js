@@ -45,11 +45,11 @@ class Command extends Message.Event {
 			this.InLog(this.sessions);
 			if (this.endSession(message, this.sessions.length)) {
 				//do nothing?
-			} else message.channel.send(`No session going on!`);
+			} else message.channel.send(`${this.e.mod} No session going on!`);
 			return;
 		} else {
 			if (this.inSession.includes(this.sessions.length))
-				return message.channel.send(`Already in a session!`);
+				return message.channel.send(`${this.e.mod} Already in a session!`);
 		}
 		const defaultTime = this.config.Dev.time ?? 120;
 		const time = args[0]
@@ -93,7 +93,7 @@ class Command extends Message.Event {
 					if (error) {
 						const err = new Err(error, "EVAL-ERROR", { toParse, toProcess });
 						message.channel.send(
-							`:x: Could not evaluate! Please check logs! \n[${err.code}]-${err.info.id}`
+							`${this.e.dum} Could not evaluate! Please check logs! \n[${err.code}]-${err.info.id}`
 						);
 					}
 				}
@@ -101,7 +101,8 @@ class Command extends Message.Event {
 			collector.on("end", (collected) => {
 				this.endSession(message, sessionID);
 			});
-		} else return message.channel.send(`Already a session going on!`);
+		} else
+			return message.channel.send(`${this.e.mod} Already a session going on!`);
 	}
 
 	endSession(message, sessionID) {
@@ -116,7 +117,7 @@ class Command extends Message.Event {
 			);
 
 			message.channel.send(
-				`Console session ended! **Session ID: ${sessionID}**!`
+				`${this.e.yarn} Console session ended! **Session ID: ${sessionID}**!`
 			);
 			return true;
 		} else return false;
@@ -138,7 +139,7 @@ class Command extends Message.Event {
 			);
 			this.sessions.push(sessionID);
 			message.channel.send(
-				`Started console session for ${
+				`${this.e.yarn} Started console session for ${
 					receivedTime / 1000
 				} second(s)! **Session ID: ${sessionID}**`
 			);

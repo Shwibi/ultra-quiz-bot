@@ -64,7 +64,7 @@ class Command extends Message.Event {
 
 		if (this.running.includes(message.channel.id))
 			return message.reply(
-				`There is already a quiz going on in this channel! Please wait until it is over, and then retry!`
+				`${this.e.x} There is already a quiz going on in this channel! Please wait until it is over, and then retry!`
 			);
 
 		let startsIn = 10;
@@ -74,7 +74,9 @@ class Command extends Message.Event {
 
 		const id = args[0];
 		if (!id)
-			return message.reply(`Please provide the id of the quiz to start!`);
+			return message.reply(
+				`${this.e.syntax} Please provide the id of the quiz to start!`
+			);
 
 		const timeBetweenQuestions = args[2]
 			? !isNaN(parseInt(args[2]))
@@ -92,7 +94,7 @@ class Command extends Message.Event {
 			});
 		}
 		if (!quizFromDb || !quizFromDb.quizDetails)
-			return message.reply(`There exists no such quiz!`);
+			return message.reply(`${this.e.dum} There exists no such quiz!`);
 		this.quizCache[id] = quizFromDb;
 		const quizName = quizFromDb?.name || "Quiz";
 		const qd = quizFromDb.quizDetails;
@@ -101,7 +103,9 @@ class Command extends Message.Event {
 			guildId: message.guild.id,
 		});
 		if (!guildDB)
-			return message.channel.send(`Something went wrong! Please try again!`);
+			return message.channel.send(
+				`${this.e.error} Something went wrong! Please try again!`
+			);
 		this.banList = await guildDB.get("bannedUsers");
 		if (this.banList.includes(message.author.id)) return message.delete();
 

@@ -51,27 +51,32 @@ class Command extends Message.Event {
 
 		const quizId = args[0];
 		if (!quizId || isNaN(parseInt(quizId)))
-			return message.reply(`Please provide a valid quiz id to view!`);
+			return message.reply(
+				`${this.e.syntax} Please provide a valid quiz id to view!`
+			);
 
 		if (
 			Start.instance.inSessionGuilds[message.guild.id] &&
 			Start.instance.inSessionGuilds[message.guild.id].includes(quizId)
 		)
 			return message.channel.send(
-				`That quiz is going on currently, cannot view it!`
+				`${this.e.mod} That quiz is going on currently, cannot view it!`
 			);
 
 		let quizDetails;
 
 		if (this.notFound.includes(quizId))
-			return message.reply(`Did not find any quiz with that id!`);
+			return message.reply(`${this.e.dum} Did not find any quiz with that id!`);
 
 		// Get from cache
 		if (this.quizCache[quizId]) {
 			quizDetails = this.quizCache[quizId];
 		} else {
 			const fromDB = await QuizModel.findOne({ quizId: quizId });
-			if (!fromDB) return message.reply(`Did not find any quiz with that id!`);
+			if (!fromDB)
+				return message.reply(
+					`${this.e.dum} Did not find any quiz with that id!`
+				);
 			quizDetails = fromDB.toObject();
 			this.quizCache[quizId] = quizDetails;
 			// this.InLog(quizDetails);

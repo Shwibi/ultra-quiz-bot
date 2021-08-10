@@ -37,9 +37,9 @@ class EntryPoint extends Main {
 			x: "<:no:752721988388126730>",
 			r: "<:yes:752721984227508274>",
 			tic: "<:blurpleticket:874161306838638592>",
-			on: "<:online:752721988962746429>",
-			off: "<:offline:752721987842998342>",
-			idle: "<:idle:752721987855581246>",
+			on: "<:online:874711953266851910>",
+			off: "<:offline:874711953245864027>",
+			idle: "<:idle:874711953136832604>",
 			dev: "<:dev:752721984621772890>",
 			dnd: "<:dnd:752721981245358091>",
 			bug1: "<:bughunter1:872841410561318952>",
@@ -57,7 +57,16 @@ class EntryPoint extends Main {
 			new: ":dart:",
 			remove: "📄",
 			yarn: "🧶",
+			dum: "<:dum:874711954885865483>",
+			error: "<:error:874711953182969906>",
+			syntax: "<:syntax:874711953535283240>",
+			ohno: "<:ohgodohduck:874161386576547880>",
+			cool: "<:squirtlecool:874161386257805332>",
+			link: "<:blurplelink:874161307170013204>",
+			help: "<:blurplesupport:874161307073531914>",
 		};
+
+		this.UnknownError = `${this.e.error} An unknown error occured! Please try again!`;
 	}
 
 	/**

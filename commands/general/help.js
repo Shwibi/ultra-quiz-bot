@@ -147,9 +147,11 @@ class Command extends Message.Event {
 		// Other info
 		helpEmbed.addField(
 			`Other information`,
-			`**Devs:** <@${this.config.Bot.devs.join(`>, <@`)}> \n[**Invite**](${
-				this.config.Bot.invite
-			}) \n[**Support server**](${this.config.Bot.support})`
+			`**Devs:** <@${this.config.Bot.devs.join(`>, <@`)}> \n${
+				this.e.luv
+			} [**Invite**](${this.config.Bot.invite}) \n${
+				this.e.help
+			} [**Support server**](${this.config.Bot.support})`
 		);
 
 		message.channel.send(helpEmbed);
