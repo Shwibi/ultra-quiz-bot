@@ -14,7 +14,9 @@ const { Cache, Err, Main, msToTime } = require(`../../utils/Utils`);
 const { Qm } = require("../../managers/QuizManager");
 
 const UPDATES = `
-\`10/08/2021\` - Added "info" command, QuizManager(dev), handled error logging(dev)
+\`10/08/2021@3\` - [Dev] Fixed console
+\`10/08/2021@2\` - [Social] Let the user know what the actual required arguments are when creating a quiz
+\`10/08/2021@1\` - [Feature] Added "info" command, QuizManager(dev), handled error logging(dev)
 `;
 
 const CommandName = "About";
@@ -80,7 +82,11 @@ class Command extends Message.Event {
 		else this.InLog(totalQuizzes);
 
 		// Uptime
-		InformationEmbed.addField(`Uptime`, msToTime(this.client.uptime), true);
+		InformationEmbed.addField(
+			`Uptime from last update`,
+			msToTime(this.client.uptime),
+			true
+		);
 
 		// Developers
 		const AllDevs = [];

@@ -30,6 +30,7 @@ class EntryPoint extends Main {
 		this.connectedToButton = false;
 		this.config = require("./store/config.json");
 		this.prevlog = console.log;
+		this.toSendCache = [];
 
 		// Emojis
 		this.e = {
@@ -132,35 +133,40 @@ class EntryPoint extends Main {
 	}
 
 	InLog(...message) {
-		this.prevlog(`[${this.name}]:`.yellow, ...message);
-		this.toSendCache = [];
-		this.toSend = "";
-		this.dev_logs = this.client.channels.cache.get(this.config.Dev.dev_logs);
-		if (message[0] instanceof String && message[0].startsWith("\u001b[33m"))
-			message[0] = message[0]
-				.split("\u001b[33m")
-				.join("")
-				.split("\u001b[39m")
-				.join("");
-
-		this.toSendCache.push(
-			`***[${new Date().toLocaleString()}]*** \n` +
-				JSON.stringify(message, null, 4) +
-				"\n\n=================="
+		console.log(`[${this.name}]:`.yellow, ...message);
+		// this.toSendCache = [];
+		this.toSendCache = this.toSendCache.slice(
+			this.toSendCache.length > 100 ? 100 : 0
 		);
+		this.toSendCache.push(message);
+		// this.toSend = "";
+		// this.dev_logs = this.client.channels.cache.get(this.config.Dev.dev_logs);
+		// if (message[0] instanceof String && message[0].startsWith("\u001b[33m"))
+		// 	message[0] = message[0]
+		// 		.split("\u001b[33m")
+		// 		.join("")
+		// 		.split("\u001b[39m")
+		// 		.join("");
 
-		setTimeout(() => {
-			if (this.toSendCache.length !== 0)
-				if (this.dev_logs)
-					this.dev_logs.send(this.toSendCache.join(" \n").substr(0, 3999));
-			this.toSendCache = [];
-		}, 3000);
+		// this.toSendCache.push(
+		// 	`***[${new Date().toLocaleString()}]*** \n` +
+		// 		JSON.stringify(message, null, 4) +
+		// 		"\n\n=================="
+		// );
+
+		// setTimeout(() => {
+		// 	if (this.toSendCache.length !== 0)
+		// 		if (this.dev_logs)
+		// 			this.dev_logs.send(this.toSendCache.join(" \n").substr(0, 3999));
+		// 	this.toSendCache = [];
+		// }, 3000);
 	}
 
 	devLog(...message) {
 		if (!this.dev_logs)
 			this.dev_logs = this.client.channels.cache.get(this.config.Dev.dev_logs);
 		this.InLog(...message);
+		this.dev_logs.send(JSON.stringify(message, null, 2));
 	}
 
 	Test() {}
@@ -185,8 +191,5 @@ process.on("unhandledRejection", (err) => {
 
 const PreviousLog = console.log;
 entryInstance.prevlog = PreviousLog;
-console.log = (...args) => {
-	entryInstance.InLog(...args);
-};
 
 module.exports = { EntryPoint, entryInstance, disbut: entryInstance.disbut };
