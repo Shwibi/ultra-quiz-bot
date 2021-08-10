@@ -144,7 +144,11 @@ class Event extends Index.EntryPoint {
 		setTimeout(() => timestamps.delete(message.author.id), cooldownAmount);
 
 		// Carry command
-		res.call(message, this.client);
+		try {
+			res.call(message, this.client);
+		} catch (err) {
+			if (err) this.InLog(err);
+		}
 	}
 
 	delete(message, timeout = 1) {

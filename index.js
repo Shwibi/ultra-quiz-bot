@@ -29,6 +29,7 @@ class EntryPoint extends Main {
 		});
 		this.connectedToButton = false;
 		this.config = require("./store/config.json");
+		this.prevlog = console.log;
 
 		// Emojis
 		this.e = {
@@ -131,17 +132,29 @@ class EntryPoint extends Main {
 	}
 
 	InLog(...message) {
-		console.log(`[${this.name}]:`.yellow, ...message);
+		this.prevlog(`[${this.name}]:`.yellow, ...message);
+		this.toSendCache = [];
+		this.toSend = "";
 		this.dev_logs = this.client.channels.cache.get(this.config.Dev.dev_logs);
-		if (this.client && this.dev_logs) {
-			message.forEach((msg) => {
-				this.dev_logs.send(
-					`***[${new Date().toLocaleString()}]*** \n` +
-						JSON.stringify(msg, null, 4) +
-						"\n\n=================="
-				);
-			});
-		}
+		if (message[0] instanceof String && message[0].startsWith("\u001b[33m"))
+			message[0] = message[0]
+				.split("\u001b[33m")
+				.join("")
+				.split("\u001b[39m")
+				.join("");
+
+		this.toSendCache.push(
+			`***[${new Date().toLocaleString()}]*** \n` +
+				JSON.stringify(message, null, 4) +
+				"\n\n=================="
+		);
+
+		setTimeout(() => {
+			if (this.toSendCache.length !== 0)
+				if (this.dev_logs)
+					this.dev_logs.send(this.toSendCache.join(" \n").substr(0, 3999));
+			this.toSendCache = [];
+		}, 3000);
 	}
 
 	devLog(...message) {
@@ -161,5 +174,19 @@ entryInstance.ConnectButton();
 setTimeout(() => {
 	entryInstance.SetStatus();
 }, 20000);
+
+process.on("uncaughtException", (err) => {
+	entryInstance.InLog(err.message, err);
+});
+
+process.on("unhandledRejection", (err) => {
+	entryInstance.InLog(err.message, err);
+});
+
+const PreviousLog = console.log;
+entryInstance.prevlog = PreviousLog;
+console.log = (...args) => {
+	entryInstance.InLog(...args);
+};
 
 module.exports = { EntryPoint, entryInstance, disbut: entryInstance.disbut };
