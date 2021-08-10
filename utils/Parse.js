@@ -60,11 +60,15 @@ function Parse(
 
 	if (!CheckForRequired(contentToParse))
 		return callback(
-			new Err(`Required items are missing or invalid format!`, "REQC", {
-				contentToParse,
-				REQUIRED_ITEMS,
-				dont_log: true,
-			}),
+			new Err(
+				`Required items are missing or invalid format Make sure you have a question, a wrong option, AS WELL AS A CORRECT ONE!`,
+				"REQC",
+				{
+					contentToParse,
+					REQUIRED_ITEMS,
+					dont_log: true,
+				}
+			),
 			null
 		);
 
@@ -87,11 +91,15 @@ function Parse(
 		// Check for all things
 		if (!CheckForRequired(RawQuestionData, true))
 			return callback(
-				new Err(`Required items are missing or invalid format!`, "REQM", {
-					RawQuestionData,
-					REQUIRED_ITEMS,
-					dont_log: true,
-				}),
+				new Err(
+					`Required items are missing or invalid format Make sure you have a question, a wrong option, AS WELL AS A CORRECT ONE!`,
+					"REQM",
+					{
+						RawQuestionData,
+						REQUIRED_ITEMS,
+						dont_log: true,
+					}
+				),
 				null
 			);
 
