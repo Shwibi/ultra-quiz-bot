@@ -26,6 +26,11 @@ class Command extends Message.Event {
 				value:
 					'Similar to "<>" but instead of required, this encloses **optional** parameters. This means that process/command would work even without this parameter.',
 			},
+			{
+				name: "Help usage: option? - Parameter",
+				value:
+					'This is an **optional** parameter, and you have to type the exact `option` the `?` is put after to enable it. For example, if a command has the help `<prefix>command [notify?]` you have to use it as `<prefix>command notify` to enable the "notify" option',
+			},
 		];
 	}
 
@@ -80,15 +85,15 @@ class Command extends Message.Event {
 						message.delete({ timeout: 5000 });
 					});
 			const commandHelpEmbed = new Discord.MessageEmbed()
-				.setTitle(command.useName)
-				.setDescription(command.description)
-				.setColor(command.color)
+				.setTitle(command.useName || command.name)
+				.setDescription(command.description || command.useName)
+				.setColor(command.color || "RANDOM")
 				.addField("Guild only?", command.guildOnly, true)
 				.addField("Cooldown", command.cooldown, true)
 				.addField(
 					"Aliases",
 					command.aliases.length > 0
-						? command.aliases.join(", ")
+						? command.aliases.join(", \n")
 						: "No aliases",
 					true
 				)

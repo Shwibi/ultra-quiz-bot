@@ -87,8 +87,8 @@ class Event extends Index.EntryPoint {
 		} else message.prefix = this.config.Bot.prefix;
 
 		// Developer
-		// if (!message.isDev) return;
-		// message.prefix = this.config.Dev.prefix;
+		if (!message.isDev) return;
+		message.prefix = this.config.Dev.prefix;
 
 		// Help by ping
 		if (msg.includes(this.client.user.id))
@@ -144,7 +144,11 @@ class Event extends Index.EntryPoint {
 		setTimeout(() => timestamps.delete(message.author.id), cooldownAmount);
 
 		// Carry command
-		res.call(message, this.client);
+		try {
+			res.call(message, this.client);
+		} catch (err) {
+			if (err) this.InLog(err);
+		}
 	}
 
 	delete(message, timeout = 1) {

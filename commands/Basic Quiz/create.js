@@ -9,6 +9,7 @@ const { Cache, Err, Main } = require(`../../utils/Utils`);
 const QuizModel = require("../../models/Quiz");
 const https = require("https");
 const Parse = require("../../utils/Parse");
+const { Qm } = require("../../managers/QuizManager");
 
 const CommandName = "Create";
 
@@ -135,82 +136,6 @@ class Command extends Message.Event {
 											}
 										} else toParse = allQuestionsCollected.content;
 										setTimeout(() => {
-											// this.parseQuestions(
-											// 	toParse,
-											// 	allQuestionsCollected,
-											// 	async (allQuestions) => {
-											// 		let quizId;
-											// 		let quizSetter = await QuizModel.findOne({
-											// 			quizId: 0,
-											// 		});
-											// 		if (!quizSetter) {
-											// 			quizSetter = await QuizModel.create({
-											// 				quizId: 0,
-											// 				quizDetails: "50",
-											// 				creator: message.author.id,
-											// 			});
-											// 		}
-											// 		const prevCount = quizSetter.quizDetails;
-											// 		quizId = parseInt(prevCount) + 1;
-											// 		await quizSetter.updateOne({
-											// 			quizDetails: `${quizId}`,
-											// 		});
-											// 		// await QuizModel.estimatedDocumentCount({}, (err, count) => {
-											// 		//   if (err) {
-											// 		//     try {
-											// 		//       message.member.send(
-											// 		//         `❌ Error: \n`, err, `\n\n Please let the dev know!`
-											// 		//       );
-											// 		//     } catch (error) {
-											// 		//       this.InLog(error);
-											// 		//     }
-											// 		//     message.reply(`❌ There was an error generating quiz, please try again later!`);
-											// 		//     waitingForQuestionsAllMessage.delete();
-											// 		//     return;
-											// 		//   }
-
-											// 		//   quizId = count;
-											// 		// });
-											// 		const quizDbInst = await QuizModel.create({
-											// 			quizId: quizId,
-											// 			quizDetails: allQuestions,
-											// 			name: quizDetails.name,
-											// 			creator: message.author.id,
-											// 		});
-											// 		waitingForQuestionsAllMessage.delete();
-											// 		View.instance.add(quizId);
-											// 		message.channel.send(
-											// 			`✅ Successfully parsed all the questions (${allQuestions.length}). The quiz id is ${quizId}. Please type \`${message.prefix}start ${quizId}\` to start this quiz.`
-											// 		);
-											// 		const configChannel = this.client.channels.cache.find(
-											// 			(ch) => ch.id == this.config.Dev.quiz.log_channel
-											// 		);
-											// 		if (configChannel) {
-											// 			const configEmbed = new Discord.MessageEmbed()
-											// 				.setTitle(`New quiz ${quizDetails.name}`)
-											// 				.setDescription(
-											// 					`Created by ${message.author.tag}. ID: ${message.author.id}`
-											// 				)
-											// 				.addField(`Quiz name`, quizDetails.name)
-											// 				.addField(
-											// 					`Number of questions`,
-											// 					allQuestions.length
-											// 				)
-											// 				.addField(
-											// 					`Channel`,
-											// 					`<#${message.channel.id}> | ${message.channel.id}`,
-											// 					true
-											// 				)
-											// 				.addField(
-											// 					`Guild`,
-											// 					`Name: ${message.guild.name} | ID: ${message.guild.id}`
-											// 				)
-											// 				.setTimestamp()
-											// 				.setColor("#55EC2B");
-											// 			configChannel.send(configEmbed);
-											// 		}
-											// 	}
-											// );
 											Parse(toParse, async (err, allQuestions) => {
 												if (err) {
 													this.InLog(err.info);
@@ -219,45 +144,36 @@ class Command extends Message.Event {
 													message.channel.send(err.message);
 													return;
 												}
-												let quizId;
-												let quizSetter = await QuizModel.findOne({
-													quizId: 0,
-												});
-												if (!quizSetter) {
-													quizSetter = await QuizModel.create({
-														quizId: 0,
-														quizDetails: "50",
-														creator: message.author.id,
-													});
-												}
-												const prevCount = quizSetter.quizDetails;
-												quizId = parseInt(prevCount) + 1;
-												await quizSetter.updateOne({
-													quizDetails: `${quizId}`,
-												});
-												// await QuizModel.estimatedDocumentCount({}, (err, count) => {
-												//   if (err) {
-												//     try {
-												//       message.member.send(
-												//         `❌ Error: \n`, err, `\n\n Please let the dev know!`
-												//       );
-												//     } catch (error) {
-												//       this.InLog(error);
-												//     }
-												//     message.reply(`❌ There was an error generating quiz, please try again later!`);
-												//     waitingForQuestionsAllMessage.delete();
-												//     return;
-												//   }
-
-												//   quizId = count;
+												// let quizId;
+												// let quizSetter = await QuizModel.findOne({
+												// 	quizId: 0,
 												// });
-												const quizDbInst = await QuizModel.create({
-													quizId: quizId,
+												// if (!quizSetter) {
+												// 	quizSetter = await QuizModel.create({
+												// 		quizId: 0,
+												// 		quizDetails: "50",
+												// 		creator: message.author.id,
+												// 	});
+												// }
+												// const prevCount = quizSetter.quizDetails;
+												// quizId = parseInt(prevCount) + 1;
+												// await quizSetter.updateOne({
+												// 	quizDetails: `${quizId}`,
+												// });
+
+												// const quizDbInst = await QuizModel.create({
+												// 	quizId: quizId,
+												// 	quizDetails: allQuestions,
+												// 	name: quizDetails.name,
+												// 	creator: message.author.id,
+												// });
+
+												// waitingForQuestionsAllMessage.delete();
+												const quizDbInst = await Qm.Create({
 													quizDetails: allQuestions,
 													name: quizDetails.name,
 													creator: message.author.id,
 												});
-												waitingForQuestionsAllMessage.delete();
 												View.instance.add(quizId);
 												message.channel.send(
 													`✅ Successfully parsed all the questions (${allQuestions.length}). The quiz id is ${quizId}. Please type \`${message.prefix}start ${quizId}\` to start this quiz.`
