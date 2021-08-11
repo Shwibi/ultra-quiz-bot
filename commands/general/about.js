@@ -14,6 +14,8 @@ const { Cache, Err, Main, msToTime } = require(`../../utils/Utils`);
 const { Qm } = require("../../managers/QuizManager");
 
 const UPDATES = `
+\`11/08/2021@2\` - [Social] Updates in \`about\` command
+\`11/08/2021@1\` - [Social] Better help!
 \`10/08/2021@4\` - [Social] More emojis!
 \`10/08/2021@3\` - [Dev] Fixed console
 \`10/08/2021@2\` - [Social] Let the user know what the actual required arguments are when creating a quiz
@@ -127,7 +129,10 @@ class Command extends Message.Event {
 		);
 
 		// Updates
-		InformationEmbed.addField(`Updates (DD/MM/YYYY)`, UPDATES.trim());
+		InformationEmbed.addField(
+			`Updates (DD/MM/YYYY)`,
+			UPDATES.trim().split("\n`").slice(0, 5).join("\n`")
+		);
 
 		// Send the embed :D
 		message.channel.send({ embed: InformationEmbed });

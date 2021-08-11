@@ -361,6 +361,7 @@ module.exports = {
 	aliases: ["new"],
 	permissions: ["SEND_MESSAGES"],
 	cooldown: 30,
+	args: ["<name of quiz>"],
 	color: "#21B54A",
 	extraFields: [
 		{

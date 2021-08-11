@@ -151,6 +151,7 @@ module.exports = {
 	aliases: ["lbd"],
 	permissions: ["SEND_MESSAGES"],
 	cooldown: 10,
+	args: ["[local?]", "[rollbacks]"],
 	color: "RANDOM",
 	extraFields: [
 		{
@@ -159,7 +160,7 @@ module.exports = {
 				"Write `local` after leaderboard to see per-quiz leaderboard. Only valid for quizzes conducted in the server (latest). **NOTE: You can only view quiz leaderboards of quizzes that were completed in the last 5 hours only**",
 		},
 		{
-			name: "Number?",
+			name: "Rollbacks",
 			value:
 				"Number of quizzes to roll back to. Defaults to 0, i.e. returns latest quiz.",
 		},
@@ -174,7 +175,7 @@ module.exports = {
 				"`<prefix>leaderboard local 2` -> This will return a quiz that was conducted 2 quizzes before latest. So if quizzes were conducted as `QuizA -> QuizB -> QuizC -> QuizD` This would return leaderboard for `QuizB`",
 		},
 	],
-	help: `<prefix>leaderboard [local?] [number]`,
+	help: `<prefix>leaderboard [local?] [rollbacks]`,
 	call: async (message, client) => {
 		if (!instance.initiated) instance.init(client);
 		instance.call(message);

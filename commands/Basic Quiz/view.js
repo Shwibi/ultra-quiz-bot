@@ -246,7 +246,8 @@ const instance = new Command();
 // Exports
 module.exports = {
 	name: CommandName.toLowerCase(),
-	description: "View a quiz using it's id!",
+	description:
+		"View a quiz using it's id! You can always change pages using reactions after using the command :)",
 	useName: CommandName,
 	ignore: false,
 	guildOnly: false,
@@ -254,6 +255,7 @@ module.exports = {
 	permissions: ["SEND_MESSAGES"],
 	cooldown: 10,
 	color: "#C281FF",
+	args: ["<id>", "[page]"],
 	extraFields: [
 		{
 			name: "Quiz ID",

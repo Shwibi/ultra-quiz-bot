@@ -163,9 +163,10 @@ module.exports = {
 	aliases: ["cns"],
 	permissions: ["DEV"],
 	cooldown: 3,
+	args: ["[time/stop?]"],
 	color: "RANDOM",
 	extraFields: [],
-	help: CommandName,
+	help: `<prefix>console [time/stop?]`,
 	call: async (message, client) => {
 		if (!instance.initiated) instance.init(client);
 		instance.call(message);

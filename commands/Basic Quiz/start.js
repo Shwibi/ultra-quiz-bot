@@ -563,6 +563,13 @@ module.exports = {
 	ignore: false,
 	guildOnly: true,
 	aliases: ["begin"],
+	args: [
+		"<id>",
+		"[time before start]",
+		"[time b/w q]",
+		"[serverboard: true/false/force]",
+		"[dm?]",
+	],
 	permissions: ["SEND_MESSAGES"],
 	cooldown: 25,
 	color: "#FF00B5",
