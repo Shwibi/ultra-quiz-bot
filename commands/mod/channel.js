@@ -91,6 +91,7 @@ module.exports = {
 	aliases: ["boardchannel", "leaderboardchannel", "lbc"],
 	permissions: ["SEND_MESSAGES", "ADMINISTRATOR"],
 	cooldown: 3,
+	args: ["<channel>"],
 	color: "#50E9FF",
 	extraFields: [],
 	help: `\`<prefix>channel <mention channel/channel ID>\``,

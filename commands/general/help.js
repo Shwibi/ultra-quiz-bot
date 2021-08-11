@@ -14,6 +14,7 @@ class Command extends Message.Event {
 	 */
 	constructor() {
 		super(CommandName);
+		this.help = false;
 
 		this.helpFields = [
 			{
@@ -30,6 +31,10 @@ class Command extends Message.Event {
 				name: "Help usage: option? - Parameter",
 				value:
 					'This is an **optional** parameter, and you have to type the exact `option` the `?` is put after to enable it. For example, if a command has the help `<prefix>command [notify?]` you have to use it as `<prefix>command notify` to enable the "notify" option',
+			},
+			{
+				name: "Help usage: ()*x - Repeatable",
+				value: `This depicts that the thing inside of the \`(\` and \`)\` brackets is repeatable \`x\` times, or infinitely repeatable if "x" is not present.`,
 			},
 		];
 	}
@@ -107,54 +112,70 @@ class Command extends Message.Event {
 			return;
 		}
 
-		const helpEmbed = new Discord.MessageEmbed()
-			.setTitle(`Help is here!`)
-			.setDescription(
-				`Here are all my commands! The prefix for the server is \`${message.prefix}\``
-			)
-			.setColor(`RANDOM`)
-			.setTimestamp()
-			.setFooter(`Requested by ${message.author.tag}`);
+		if (!this.help) {
+			const helpEmbed = new Discord.MessageEmbed()
+				.setAuthor(
+					this.client.user.username,
+					this.client.user.avatarURL({ dynamic: true })
+				)
+				.setTitle(`Help is here!`)
+				.setDescription(
+					`The prefix for the server is \`${message.prefix}\` | Use \`${message.prefix}about\` to get the latest updates!`
+				)
+				.setColor(`RANDOM`)
+				.setTimestamp();
 
-		const commandCats = fs.readdirSync(`./commands`);
-		for (const cat of commandCats) {
-			let allcmds = [];
-			const commandFiles = fs
-				.readdirSync(`./commands/${cat}`)
-				.filter((file) => file.endsWith(`.js`) && !file.startsWith(`$`));
-			for (const file of commandFiles) {
-				const command = require(`../../commands/${cat}/${file}`);
-				command.status = "yeh";
-				let commandPerms = command.permissions || ["SEND_MESSAGES"];
-				for (let i = 0; i < commandPerms.length; i++) {
-					if (commandPerms[i] == "DEV") {
-						if (!message.isDev) command.status = "noh";
-						continue;
+			const commandCats = fs.readdirSync(`./commands`);
+			for (const cat of commandCats) {
+				let allcmds = [];
+				const commandFiles = fs
+					.readdirSync(`./commands/${cat}`)
+					.filter((file) => file.endsWith(`.js`) && !file.startsWith(`$`));
+				for (const file of commandFiles) {
+					const command = require(`../../commands/${cat}/${file}`);
+					command.status = "yeh";
+					let commandPerms = command.permissions || ["SEND_MESSAGES"];
+					for (let i = 0; i < commandPerms.length; i++) {
+						if (commandPerms[i] == "DEV") {
+							if (!message.isDev) command.status = "noh";
+							continue;
+						}
+						if (!message.member.hasPermission(commandPerms[i]))
+							command.status = "noh";
 					}
-					if (!message.member.hasPermission(commandPerms[i]))
-						command.status = "noh";
+					if (command.status !== "noh")
+						allcmds.push(
+							`\`\`\`${message.prefix}${command.useName}${
+								command.args ? " " + command.args.join(" ") : ""
+							}\`\`\`${command.description}`
+						);
 				}
-				if (command.status !== "noh") allcmds.push(command.useName);
+				let catName =
+					cat.substr(0, 1).toUpperCase() + cat.substr(1, cat.length - 1);
+				if (allcmds.length !== 0)
+					helpEmbed.addField(catName, `${allcmds.join("\n")}`);
 			}
-			let catName =
-				cat.substr(0, 1).toUpperCase() + cat.substr(1, cat.length - 1);
-			if (allcmds.length !== 0)
-				helpEmbed.addField(catName, allcmds.join(`, \n`), true);
+
+			helpEmbed.addFields(this.helpFields);
+
+			// Other info
+			helpEmbed.addField(
+				`Other information`,
+				`**Devs:** <@${this.config.Bot.devs.join(`>, <@`)}> \n${
+					this.e.luv
+				} [**Invite**](${this.config.Bot.invite}) \n${
+					this.e.help
+				} [**Support server**](${this.config.Bot.support})`
+			);
+			this.help = helpEmbed;
 		}
 
-		helpEmbed.addFields(this.helpFields);
-
-		// Other info
-		helpEmbed.addField(
-			`Other information`,
-			`**Devs:** <@${this.config.Bot.devs.join(`>, <@`)}> \n${
-				this.e.luv
-			} [**Invite**](${this.config.Bot.invite}) \n${
-				this.e.help
-			} [**Support server**](${this.config.Bot.support})`
+		message.channel.send(
+			this.help.setFooter(
+				`Requested by ${message.author.tag}`,
+				message.author.avatarURL({ dynamic: true })
+			)
 		);
-
-		message.channel.send(helpEmbed);
 	}
 }
 
@@ -163,7 +184,7 @@ const instance = new Command();
 // Exports
 module.exports = {
 	name: CommandName.toLowerCase(),
-	description: CommandName,
+	description: `Get help with the bot commands and support/invite links!`,
 	useName: CommandName,
 	ignore: false,
 	guildOnly: false,
@@ -171,6 +192,7 @@ module.exports = {
 	permissions: ["SEND_MESSAGES"],
 	cooldown: 3,
 	color: "ORANGE",
+	args: ["[command]"],
 	extraFields: instance.helpFields,
 	help: CommandName,
 	call: async (message, client) => {
