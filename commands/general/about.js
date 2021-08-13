@@ -14,6 +14,7 @@ const { Cache, Err, Main, msToTime } = require(`../../utils/Utils`);
 const { Qm } = require("../../managers/QuizManager");
 
 const UPDATES = `
+\`13/08/2021@1\` - [FIX] Fixed literally everything
 \`11/08/2021@2\` - [Social] Updates in \`about\` command
 \`11/08/2021@1\` - [Social] Better help!
 \`10/08/2021@4\` - [Social] More emojis!
