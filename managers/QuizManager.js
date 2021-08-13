@@ -75,9 +75,20 @@ class QuizManager {
 	 * @returns {mongoose.Query} Database document
 	 */
 	async Create(Quiz) {
-		const QuizSetter = await this.Fetch(0);
-		const PreviousCount = await QuizSetter.get("quizDetals");
-		const NewCount = parseInt(PreviousCount) + 1;
+		let QuizSetter = await this.Fetch(150);
+		if (!QuizSetter) {
+			QuizSetter = await this.QuizModel.create({
+				quizId: 150,
+				quizDetails: "200",
+				creator: "2",
+			});
+		}
+		console.log(QuizSetter);
+
+		const PreviousCount = await QuizSetter.get("quizDetails");
+		console.log({ PreviousCount });
+		let NewCount = parseInt(PreviousCount) + 1;
+		if (isNaN(NewCount)) NewCount = 300;
 		Quiz.quizId = NewCount;
 		this.UpdateOne(QuizSetter, { quizDetails: `${NewCount}` });
 		const Document = await this.QuizModel.create(Quiz);

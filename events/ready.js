@@ -34,7 +34,9 @@ class Ready extends Index.EntryPoint {
 				this.e.cozy
 			} **Online!** At: ${new Date().toLocaleString()} | Platform: ${
 				process.platform
-			} | P-V: ${process.version} | Path: ${process.execPath}`
+			} | P-V: ${process.version} | Path: ${
+				process.execPath
+			} | <@${this.config.Bot.devs.join(">, <@")}>`
 		);
 	}
 }

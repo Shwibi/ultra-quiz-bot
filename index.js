@@ -31,6 +31,22 @@ class EntryPoint extends Main {
 		this.config = require("./store/config.json");
 		this.prevlog = console.log;
 		this.toSendCache = [];
+		setInterval(() => {
+			if (this.toSendCache.length != 0) {
+				this.devLog(
+					this.toSendCache.length == 1 ? this.toSendCache[0] : this.toSendCache
+				);
+				this.toSendCache = [];
+			}
+			if (this.cache.length != 0) {
+				const prev = [];
+				this.cache.forEach((cach) => {
+					prev.push(cach.message);
+				});
+				this.cache = [];
+				this.devLog(prev.length == 1 ? prev[0] : prev);
+			}
+		}, 5000);
 
 		// Emojis
 		this.e = {
@@ -142,12 +158,12 @@ class EntryPoint extends Main {
 	}
 
 	InLog(...message) {
-		console.log(`[${this.name}]:`.yellow, ...message);
+		this.prevlog(`[${this.name}]:`.yellow, ...message);
 		// this.toSendCache = [];
 		this.toSendCache = this.toSendCache.slice(
 			this.toSendCache.length > 100 ? 100 : 0
 		);
-		this.toSendCache.push(message);
+		this.toSendCache = [...this.toSendCache, ...message];
 		// this.toSend = "";
 		// this.dev_logs = this.client.channels.cache.get(this.config.Dev.dev_logs);
 		// if (message[0] instanceof String && message[0].startsWith("\u001b[33m"))
@@ -174,8 +190,17 @@ class EntryPoint extends Main {
 	devLog(...message) {
 		if (!this.dev_logs)
 			this.dev_logs = this.client.channels.cache.get(this.config.Dev.dev_logs);
-		this.InLog(...message);
-		this.dev_logs.send(JSON.stringify(message, null, 2));
+
+		const toLog =
+			message.length == 1 ? this.jsonify(message[0]) : this.jsonify(message);
+		if (this.dev_logs)
+			this.dev_logs.send(
+				toLog.trim().substr(0, 1500).split(`\\"`).join("**").split(`"`).join("")
+			);
+	}
+
+	jsonify(thing, space = 2) {
+		return JSON.stringify(thing, null, space);
 	}
 
 	Test() {}
@@ -192,10 +217,12 @@ setTimeout(() => {
 
 process.on("uncaughtException", (err) => {
 	entryInstance.InLog(err.message, err);
+	entryInstance.devLog(err.message, err);
 });
 
 process.on("unhandledRejection", (err) => {
 	entryInstance.InLog(err.message, err);
+	entryInstance.devLog(err.message, err);
 });
 
 const PreviousLog = console.log;

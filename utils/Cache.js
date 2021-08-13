@@ -28,6 +28,7 @@ class Cache extends Main {
 	 */
 	Log(extra = "") {
 		this.InLog(this.message + "\n" + extra);
+		return this;
 	}
 
 	/**
