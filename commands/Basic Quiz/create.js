@@ -142,7 +142,7 @@ class Command extends Message.Event {
 													this.delete(waitingForQuestionsAllMessage);
 													// this.delete(allQuestionsCollected);
 													message.channel.send(
-														`${this.e.syntac} ${err.message}`
+														`${this.e.syntax} ${err.message}`
 													);
 													return;
 												}
@@ -176,6 +176,7 @@ class Command extends Message.Event {
 													name: quizDetails.name,
 													creator: message.author.id,
 												});
+												const quizId = await quizDbInst.get("quizId");
 												View.instance.add(quizId);
 												message.channel.send(
 													`${this.e.cool} Successfully parsed all the questions (${allQuestions.length}). The quiz id is ${quizId}. Please type \`${message.prefix}start ${quizId}\` to start this quiz.`
