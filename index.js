@@ -193,7 +193,7 @@ class EntryPoint extends Main {
 
 		const toLog =
 			message.length == 1 ? this.jsonify(message[0]) : this.jsonify(message);
-		if (this.dev_logs)
+		if (this.dev_logs && toLog)
 			this.dev_logs.send(
 				toLog.trim().substr(0, 1500).split(`\\"`).join("**").split(`"`).join("")
 			);
