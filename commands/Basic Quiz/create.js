@@ -10,6 +10,7 @@ const QuizModel = require("../../models/Quiz");
 const https = require("https");
 const Parse = require("../../utils/Parse");
 const { Qm } = require("../../managers/QuizManager");
+const { Um } = require("../../managers/UserManager");
 
 const CommandName = "Create";
 
@@ -113,6 +114,9 @@ class Command extends Message.Event {
 								allQuestionsCollector.on(
 									"collect",
 									async (allQuestionsCollected) => {
+										waitingForQuestionsAllMessage.edit(
+											`Quiz collected, please read any follow-up messages for further information!`
+										);
 										let toParse = allQuestionsCollected.content;
 										if (allQuestionsCollected.attachments.size !== 0) {
 											const toRead =
@@ -135,82 +139,72 @@ class Command extends Message.Event {
 												});
 											}
 										} else toParse = allQuestionsCollected.content;
+										// User model
+										let isPremium = false;
+										let userMod = await Um.find(message.author.id);
+										if (!userMod) {
+											userMod = await Um.create(message.author);
+										}
+										if (userMod.get("isPremium")) isPremium = true;
+
 										setTimeout(() => {
-											Parse(toParse, async (err, allQuestions) => {
-												if (err) {
-													this.InLog(err.info);
-													this.delete(waitingForQuestionsAllMessage);
-													// this.delete(allQuestionsCollected);
+											Parse(
+												toParse,
+												async (err, allQuestions) => {
+													allQuestionsCollected.delete();
+
+													if (err) {
+														this.InLog(err.info);
+														this.delete(waitingForQuestionsAllMessage);
+														// this.delete(allQuestionsCollected);
+														message.channel.send(
+															`${this.e.syntax} ${err.message}`
+														);
+														return;
+													}
+
+													const quizDbInst = await Qm.Create({
+														quizDetails: allQuestions,
+														name: quizDetails.name,
+														creator: message.author.id,
+													});
+													const quizId = await quizDbInst.get("quizId");
+													View.instance.add(quizId);
 													message.channel.send(
-														`${this.e.syntax} ${err.message}`
+														`${this.e.cool} Successfully parsed all the questions (${allQuestions.length}). The quiz id is ${quizId}. Please type \`${message.prefix}start ${quizId}\` to start this quiz.`
 													);
-													return;
-												}
-												// let quizId;
-												// let quizSetter = await QuizModel.findOne({
-												// 	quizId: 0,
-												// });
-												// if (!quizSetter) {
-												// 	quizSetter = await QuizModel.create({
-												// 		quizId: 0,
-												// 		quizDetails: "50",
-												// 		creator: message.author.id,
-												// 	});
-												// }
-												// const prevCount = quizSetter.quizDetails;
-												// quizId = parseInt(prevCount) + 1;
-												// await quizSetter.updateOne({
-												// 	quizDetails: `${quizId}`,
-												// });
-
-												// const quizDbInst = await QuizModel.create({
-												// 	quizId: quizId,
-												// 	quizDetails: allQuestions,
-												// 	name: quizDetails.name,
-												// 	creator: message.author.id,
-												// });
-
-												// waitingForQuestionsAllMessage.delete();
-												const quizDbInst = await Qm.Create({
-													quizDetails: allQuestions,
-													name: quizDetails.name,
-													creator: message.author.id,
-												});
-												const quizId = await quizDbInst.get("quizId");
-												View.instance.add(quizId);
-												message.channel.send(
-													`${this.e.cool} Successfully parsed all the questions (${allQuestions.length}). The quiz id is ${quizId}. Please type \`${message.prefix}start ${quizId}\` to start this quiz.`
-												);
-												const configChannel = this.client.channels.cache.find(
-													(ch) => ch.id == this.config.Dev.quiz.log_channel
-												);
-												if (configChannel) {
-													const configEmbed = new Discord.MessageEmbed()
-														.setTitle(
-															`New quiz ${quizDetails.name} | ID: ${quizId}`
-														)
-														.setDescription(
-															`Created by ${message.author.tag}. ID: ${message.author.id}`
-														)
-														.addField(`Quiz name`, quizDetails.name)
-														.addField(
-															`Number of questions`,
-															allQuestions.length
-														)
-														.addField(
-															`Channel`,
-															`<#${message.channel.id}> | ${message.channel.id}`,
-															true
-														)
-														.addField(
-															`Guild`,
-															`Name: ${message.guild.name} | ID: ${message.guild.id}`
-														)
-														.setTimestamp()
-														.setColor("#55EC2B");
-													configChannel.send(configEmbed);
-												}
-											});
+													const configChannel = this.client.channels.cache.find(
+														(ch) => ch.id == this.config.Dev.quiz.log_channel
+													);
+													if (configChannel) {
+														const configEmbed = new Discord.MessageEmbed()
+															.setTitle(
+																`New quiz ${quizDetails.name} | ID: ${quizId}`
+															)
+															.setDescription(
+																`Created by ${message.author.tag}. ID: ${message.author.id}`
+															)
+															.addField(`Quiz name`, quizDetails.name)
+															.addField(
+																`Number of questions`,
+																allQuestions.length
+															)
+															.addField(
+																`Channel`,
+																`<#${message.channel.id}> | ${message.channel.id}`,
+																true
+															)
+															.addField(
+																`Guild`,
+																`Name: ${message.guild.name} | ID: ${message.guild.id}`
+															)
+															.setTimestamp()
+															.setColor("#55EC2B");
+														configChannel.send(configEmbed);
+													}
+												},
+												isPremium
+											);
 										}, 1000);
 									}
 								);

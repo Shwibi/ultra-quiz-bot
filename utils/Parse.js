@@ -1,8 +1,12 @@
 const { Err } = require("shwi-js");
+const msToTime = require(`./msToTime`);
 
 const REQUIRED_ITEMS = ["-question", "-options", "+o", "+c"];
 const REQ_OPT = ["+o", "+c"];
 const MAX_OPTIONS = 5;
+const MIN_TIME = 1 * 1000;
+const MAX_TIME = 20 * 60 * 1000;
+const PREMIUM_MAX_TIME = 24 * 60 * 60 * 1000;
 
 // Example
 const EXAMPLE = `
@@ -54,7 +58,8 @@ function CheckValidOptions(toCheck = OPTION_EXAMPLE) {
 
 function Parse(
 	contentToParse = EXAMPLE,
-	callback = (err = new Err(), parsed = []) => {}
+	callback = (err = new Err(), parsed = []) => {},
+	isPremium
 ) {
 	let ParsedArray = [];
 
@@ -186,13 +191,16 @@ function Parse(
 				null
 			);
 
+		const max_time = isPremium ? PREMIUM_MAX_TIME : MAX_TIME;
 		const ParsedTimeData = parseFloat(TimeData) * 1000;
-		if (ParsedTimeData < 1 * 1000 || ParsedTimeData > 20 * 60 * 1000)
+		if (ParsedTimeData < MIN_TIME || ParsedTimeData > max_time)
 			return callback(
 				new Err(
-					`Time provided is either too small or too big! Limit is Between 1 to 1200 seconds!`,
+					`Time provided is either too small or too big! Limit is Between ${msToTime(
+						MIN_TIME
+					)} to ${msToTime(max_time)}!`,
 					"INVTIME",
-					{ ParsedTimeData }
+					{ ParsedTimeData, MIN_TIME, max_time }
 				),
 				null
 			);

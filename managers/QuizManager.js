@@ -32,7 +32,7 @@ class QuizManager {
 	/**
 	 * Get a quiz from either the cache or the database!
 	 * @param {Number} quizId
-	 * @returns {QuizManager.QuizDetails} Quiz document
+	 * @returns {mongoose.Query} Document
 	 */
 	async Get(quizId) {
 		if (this.cache[quizId]) return this.cache[quizId];
@@ -40,9 +40,8 @@ class QuizManager {
 		// Fetch then add to cache
 		const FetchQuiz = this.Fetch(quizId);
 		if (FetchQuiz) {
-			const QuizDetails = await FetchQuiz.get("quizDetails");
 			this.cache[quizId] = FetchQuiz;
-			return QuizDetails;
+			return FetchQuiz;
 		} else return;
 	}
 
@@ -125,5 +124,57 @@ class QuizManager {
 	}
 }
 
+class Quiz {
+	/**
+	 *
+	 * @param {mongoose.Query} quizFromDb
+	 */
+	constructor(quizFromDb) {
+		if (!quizFromDb) return;
+		this.quizFromDb = quizFromDb;
+		this.quizId = 0;
+		this.name = "";
+		this.quizDetails = QuizManager.QuizDetailsTemplate;
+		this.creator = "";
+		this.leaderboard = [];
+
+		this.reload();
+	}
+
+	get(string) {
+		return this[string];
+	}
+
+	get info() {
+		return {
+			name: this.name,
+			quizId: this.quizId,
+			quizDetails: this.quizDetails,
+			creator: this.creator,
+			leaderboard: this.leaderboard,
+		};
+	}
+
+	get quiz() {
+		return this.quizDetails;
+	}
+
+	async reload() {
+		const quizFromDb = this.quizFromDb;
+		if (!quizFromDb) return;
+		this.quizId = quizFromDb.quizId || (await quizFromDb.get("quizId"));
+		this.name =
+			quizFromDb.name ||
+			(await quizFromDb.get("name")) ||
+			`Quiz ${this.quizId}`;
+		this.quizDetails =
+			quizFromDb.quizDetails || (await quizFromDb.get("quizDetails"));
+		this.creator = quizFromDb;
+		this.leaderboard =
+			quizFromDb.leaderboard || (await quizFromDb.get("leaderboard")) || [];
+	}
+}
+
 const Qm = new QuizManager();
-module.exports = { QuizManager, Qm };
+
+module.exports = { QuizManager, Qm, Quiz };
