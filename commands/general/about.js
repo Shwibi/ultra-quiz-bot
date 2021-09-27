@@ -14,6 +14,7 @@ const { Cache, Err, Main, msToTime } = require(`../../utils/Utils`);
 const { Qm } = require("../../managers/QuizManager");
 
 const UPDATES = `
+\`27-09-2021@1\` - [Feature] Added **premium** feature which allows you to create 1 day long quizzes
 \`13/08/2021@1\` - [FIX] Fixed literally everything
 \`11/08/2021@2\` - [Social] Updates in \`about\` command
 \`11/08/2021@1\` - [Social] Better help!

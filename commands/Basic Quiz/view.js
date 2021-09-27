@@ -226,7 +226,7 @@ class Command extends Message.Event {
 			)} \n${allOptions}`;
 			question = question.substr(0, 250);
 		}
-		if (qu.image) field += `[**View image**](${qu.image})`;
+		if (qu.image) field += `\n[**View image**](${qu.image})`;
 		Embed.addField(question, field);
 		return Embed;
 	}

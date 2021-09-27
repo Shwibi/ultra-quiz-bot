@@ -8,6 +8,7 @@ const Message = require(`../../events/message`);
 const { Cache, Err, Main, Stack } = require(`../../utils/Utils`);
 const QuizModel = require("../../models/Quiz");
 const Guilds = require("../../models/Guilds");
+const { Qm, Quiz } = require("../../managers/QuizManager");
 
 const TIME_BETWEEN_QUESTIONS = 5;
 
@@ -62,42 +63,42 @@ class Command extends Message.Event {
 		const args = lowerCaseMsg.split(/\s/);
 		const commandRaw = args.shift();
 
+		// Do not continue if a quiz is going in the same channel (to avoid confusion)
 		if (this.running.includes(message.channel.id))
 			return message.reply(
 				`${this.e.x} There is already a quiz going on in this channel! Please wait until it is over, and then retry!`
 			);
 
+		// Time to start the quiz in
 		let startsIn = 10;
 		if (args[1]) {
 			if (shwijs.IsInteger(parseInt(args[1]))) startsIn = parseInt(args[1]);
 		}
+		if (startsIn > 10 * 60) startsIn = 10 * 60;
 
+		// Quiz ID
 		const id = args[0];
 		if (!id)
 			return message.reply(
-				`${this.e.syntax} Please provide the id of the quiz to start!`
+				`${this.e.dum} Please provide the id of the quiz to start!`
 			);
 
+		// Time between each question (default to the constant above)
 		const timeBetweenQuestions = args[2]
 			? !isNaN(parseInt(args[2]))
 				? parseInt(args[2])
 				: TIME_BETWEEN_QUESTIONS
 			: TIME_BETWEEN_QUESTIONS;
 
-		let quizFromDb;
-
-		if (this.quizCache[id]) {
-			quizFromDb = this.quizCache[id];
-		} else {
-			quizFromDb = await QuizModel.findOne({
-				quizId: id,
-			});
-		}
-		if (!quizFromDb || !quizFromDb.quizDetails)
+		// Fetch quiz from database
+		//TODO: Implement QUIZMANAGER
+		let quizFromDb = await Qm.Get(id);
+		if (!quizFromDb || !quizFromDb.quizDetails || quizFromDb.quizId == 150)
 			return message.reply(`${this.e.dum} There exists no such quiz!`);
-		this.quizCache[id] = quizFromDb;
-		const quizName = quizFromDb?.name || "Quiz";
-		const qd = quizFromDb.quizDetails;
+
+		const quizClass = new Quiz(quizFromDb);
+		const quizName = quizClass.name;
+		const qd = quizClass.quizDetails;
 
 		const guildDB = await Guilds.findOne({
 			guildId: message.guild.id,
@@ -202,14 +203,15 @@ class Command extends Message.Event {
 										const user =
 											this.client.users.cache.find((u) => u.id == userId) ||
 											message.guild.members.cache.find((u) => u.id == userId);
-										guildBoardEmbed.addField(
-											`Rank ${lbgGB + 1}. ${user.username}`,
-											`<@${userId}> Correct: ${
-												GBsortedByCorrect[lbgGB].count
-											} | Time: ${
-												GBsortedByCorrect[lbgGB].time / 1000
-											} second(s)`
-										);
+										if (user)
+											guildBoardEmbed.addField(
+												`Rank ${lbgGB + 1}. ${user.username}`,
+												`<@${userId}> Correct: ${
+													GBsortedByCorrect[lbgGB].count
+												} | Time: ${
+													GBsortedByCorrect[lbgGB].time / 1000
+												} second(s)`
+											);
 										if (lbgGB == 0) {
 											guildBoardEmbed.setThumbnail(user.avatarURL());
 										}
@@ -418,7 +420,7 @@ class Command extends Message.Event {
 					if (err) return err.log();
 					const t = timeRemaining;
 					const isMod5 = t % 5 == 0 ? (t > 9 ? true : false) : false;
-					if (t < 4 || isMod5)
+					if (t < 4 || (isMod5 && timeRemaining < 61))
 						embedMsg.edit(
 							QuestionEmbed.setFooter(`You have ${timeRemaining} seconds.`),
 							optButtonsRow
