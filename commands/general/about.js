@@ -64,7 +64,7 @@ class Command extends Message.Event {
       )
       .setTitle(`About me | ${this.client.user.username}@${pack.version}`)
       .setDescription(
-        `I am a quiz bot that helps you make quiz! I am fully customisable, and very easy to use! Plus, I'm being actively developed every day :)`
+        `I am a quiz bot that helps you make quiz! I am fully customisable, and very easy to use! Plus, I'm being actively developed :)`
       )
       .setColor(`RANDOM`)
       .setFooter(`Use ${message.prefix}help to get help with the commands!`);

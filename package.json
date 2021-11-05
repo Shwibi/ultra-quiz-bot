@@ -1,25 +1,25 @@
 {
-	"name": "ultraquiz",
-	"version": "3.0.0",
-	"description": "Ultra Quiz dev",
-	"main": "index.js",
-	"scripts": {
-		"test": "nodemon index.js",
-		"start": "node index.js",
-		"node .": "node index.js",
-		"dev": "nodemon index.js"
-	},
-	"author": "",
-	"license": "ISC",
-	"dependencies": {
-		"colors": "^1.4.0",
-		"discord-buttons": "^4.0.0",
-		"discord.js": "^12.5.3",
-		"dotenv": "^8.2.0",
-		"mongoose": "^5.12.5",
-		"shwi-js": "^1.1.2"
-	},
-	"devDependencies": {
-		"nodemon": "^2.0.7"
-	}
+  "name": "ultraquiz",
+  "version": "3.0.1",
+  "description": "Ultra Quiz dev",
+  "main": "index.js",
+  "scripts": {
+    "test": "nodemon index.js",
+    "start": "node index.js",
+    "node .": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "colors": "^1.4.0",
+    "discord-buttons": "^4.0.0",
+    "discord.js": "^12.5.3",
+    "dotenv": "^8.2.0",
+    "mongoose": "^5.12.5",
+    "shwi-js": "^1.1.2"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.7"
+  }
 }
