@@ -90,6 +90,9 @@ class Event extends Index.EntryPoint {
 		// if (!message.isDev) return;
 		// message.prefix = this.config.Dev.prefix;
 
+		// Canary
+		message.prefix = "c?";
+
 		// Help by ping
 		if (msg.includes(this.client.user.id))
 			message.reply(
