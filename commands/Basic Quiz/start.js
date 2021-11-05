@@ -239,6 +239,32 @@ class Command extends Message.Event {
                     }
                   }
 
+                  let entireBoard = "";
+                  for (let y = 0; y < GBsortedByCorrect.length; y++) {
+                    const userId = GBsortedByCorrect[y].userId;
+                    const user =
+                      this.client.users.cache.find((u) => u.id == userId) ||
+                      message.guild.members.cache.find((u) => u.id == userId);
+                    if (user)
+                      entireBoard += `\n<@${user.id}> | ${user.username} : ${
+                        GBsortedByCorrect[y].count
+                      } correct answers in ${
+                        GBsortedByCorrect[y].time / 1000
+                      } second(s).`;
+                  }
+                  try {
+                    message.member.send(entireBoard.substr(0, 1999));
+                  } catch (err) {
+                    if (err) {
+                      message.channel.send(
+                        `Please make sure you have your dms turned on! I'm sending the entire data here because your dms were off. The data will be deleted after 2 minutes, so please copy it and save it somewhere! You can never access it after the initial 2 minutes!`
+                      );
+                      message.channel
+                        .send(entireBoard.substr(0, 1999))
+                        .then((m) => m.delete({ timeout: 2 * 60 * 1000 }));
+                    }
+                  }
+
                   if (args[4] && args[4] == "dm") {
                     message.member.send(guildBoardEmbed);
                   }
