@@ -3,6 +3,8 @@ const Cache = require(`../utils/Cache`);
 const Err = require(`../utils/Err`);
 const Guilds = require(`../models/Guilds`);
 const Users = require(`../models/Users`);
+const QuizRunning = require(`../models/QuizRunning`);
+const Start = require(`../commands/Basic Quiz/start`);
 
 class Ready extends Index.EntryPoint {
 	constructor() {
@@ -15,7 +17,7 @@ class Ready extends Index.EntryPoint {
 		this.initiated = true;
 		this.cache.push(new Cache(`Initiated ready event!`));
 	}
-	call() {
+	async call() {
 		if (!this.initiated)
 			return new Err(
 				`Called ready event without initialisation!`,
@@ -38,6 +40,34 @@ class Ready extends Index.EntryPoint {
 				process.execPath
 			} | <@${this.config.Bot.devs.join(">, <@")}>`
 		);
+
+		// Get quizzes running again
+		const quizzesToRun = await QuizRunning.find({ completed: false });
+		this.InLog({ quizzesToRun });
+		quizzesToRun.forEach(async (quiz) => {
+			if (
+				!quiz.get("message").msg ||
+				!quiz.get("message").msg.channel ||
+				!quiz.get("channelId") ||
+				!quiz.get("answeredUsers")
+			) {
+				await quiz.deleteOne();
+			}
+			const channel = await this.client.channels.cache.get(
+				quiz.get("channelId")
+			);
+			const channelMsg = await channel.messages.fetch(quiz.get("messageId"));
+			// this.InLog({ channel, channelMsg });
+			Start.instance.init(this.client);
+			Start.instance.call(
+				channelMsg,
+				quiz.get("questionNumber"),
+				quiz.get("crossboard"),
+				quiz.get("timeRemaining"),
+				quiz.get("answeredUsers"),
+				quiz.get("collectedUsers")
+			);
+		});
 	}
 }
 
