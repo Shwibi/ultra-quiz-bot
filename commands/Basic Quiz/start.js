@@ -239,32 +239,6 @@ class Command extends Message.Event {
                     }
                   }
 
-                  let entireBoard = "";
-                  for (let y = 0; y < GBsortedByCorrect.length; y++) {
-                    const userId = GBsortedByCorrect[y].userId;
-                    const user =
-                      this.client.users.cache.find((u) => u.id == userId) ||
-                      message.guild.members.cache.find((u) => u.id == userId);
-                    if (user)
-                      entireBoard += `\n<@${user.id}> | ${user.username} : ${
-                        GBsortedByCorrect[y].count
-                      } correct answers in ${
-                        GBsortedByCorrect[y].time / 1000
-                      } second(s).`;
-                  }
-                  try {
-                    message.member.send(entireBoard.substr(0, 1999));
-                  } catch (err) {
-                    if (err) {
-                      message.channel.send(
-                        `Please make sure you have your dms turned on! I'm sending the entire data here because your dms were off. The data will be deleted after 2 minutes, so please copy it and save it somewhere! You can never access it after the initial 2 minutes!`
-                      );
-                      message.channel
-                        .send(entireBoard.substr(0, 1999))
-                        .then((m) => m.delete({ timeout: 2 * 60 * 1000 }));
-                    }
-                  }
-
                   if (args[4] && args[4] == "dm") {
                     message.member.send(guildBoardEmbed);
                   }
@@ -311,7 +285,7 @@ class Command extends Message.Event {
                     this.client.users.cache.find((u) => u.id == userId) ||
                     message.guild.members.cache.find((u) => u.id == userId);
                   leaderBoardEmbed.addField(
-                    `Rank ${lbdU + 1}. ${user.username}`,
+                    `Rank ${lbdU + 1}. ${user.username} | ${user.id}`,
                     `<@${userId}> Correct: ${
                       sortedByCorrect[lbdU].count
                     } | Time: ${sortedByCorrect[lbdU].time / 1000} second(s)`
@@ -340,6 +314,32 @@ class Command extends Message.Event {
                   this.stash[message.guild.id] = stack;
                 } else {
                   this.stash[message.guild.id].push(leaderBoardEmbed);
+                }
+
+                let entireBoard = "Quiz results:";
+                for (let y = 0; y < sortedByCorrect.length; y++) {
+                  const userId = sortedByCorrect[y].userId;
+                  const user =
+                    this.client.users.cache.find((u) => u.id == userId) ||
+                    message.guild.members.cache.find((u) => u.id == userId);
+                  if (user)
+                    entireBoard += `\n<@${user.id}> | ${user.username} : ${
+                      sortedByCorrect[y].count
+                    } correct answers in ${
+                      sortedByCorrect[y].time / 1000
+                    } second(s).`;
+                }
+                try {
+                  message.member.send(entireBoard.substr(0, 1750));
+                } catch (err) {
+                  if (err) {
+                    message.channel.send(
+                      `Please make sure you have your dms turned on! I'm sending the entire quiz data here because your dms were off. The data will be deleted after 2 minutes, so please copy it and save it somewhere! You can never access it after the initial 2 minutes!`
+                    );
+                    message.channel
+                      .send(entireBoard.substr(0, 1999))
+                      .then((m) => m.delete({ timeout: 2 * 60 * 1000 }));
+                  }
                 }
 
                 try {
