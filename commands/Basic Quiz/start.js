@@ -31,6 +31,8 @@ class Command extends Message.Event {
     };
     this.inSessionGuilds = {};
 
+    this._dev = { _quiz_cache: new Stack.Stack("Dev quiz cache") };
+
     setInterval(() => {
       this.quizCache = {};
       this.stash = {
@@ -176,7 +178,13 @@ class Command extends Message.Event {
                   (a, b) => b.count - a.count
                 );
 
-                this.InLog(sortedByCorrect);
+                const _quiz_cache = {
+                  quizId: id,
+                  quizName: quizName,
+                  details: sortedByCorrect,
+                };
+                this.InLog(_quiz_cache);
+                this._dev._quiz_cache.push(_quiz_cache);
 
                 if (pushToGB) {
                   // overall leaderboard
@@ -258,25 +266,32 @@ class Command extends Message.Event {
                   const user =
                     this.client.users.cache.find((u) => u.id == userId) ||
                     message.guild.members.cache.find((u) => u.id == userId);
-                  const userEmbed = new Discord.MessageEmbed()
-                    .setAuthor(user.username, user.avatarURL({ dynamic: true }))
-                    .setTitle(`Quiz Results for **${quizName}**!`)
-                    .setDescription(
-                      `You got **${
-                        userInBoard.count
-                      } correct** out of a total of ${
-                        qd.length
-                      } questions! Time taken: ${
-                        userInBoard.time / 1000
-                      } second(s)`
-                    )
-                    .setColor("RANDOM")
-                    .setFooter(
-                      `Check **#${message.channel.name}** in **${message.guild.name}** for quiz leaderboard!`
-                    )
-                    .setTimestamp();
+                  if (user) {
+                    const userEmbed = new Discord.MessageEmbed()
+                      .setAuthor(
+                        user.username,
+                        user.avatarURL({ dynamic: true })
+                          ? user.avatarURL({ dynamic: true })
+                          : "https://cdn.discordapp.com/embed/avatars/0.png"
+                      )
+                      .setTitle(`Quiz Results for **${quizName}**!`)
+                      .setDescription(
+                        `You got **${
+                          userInBoard.count
+                        } correct** out of a total of ${
+                          qd.length
+                        } questions! Time taken: ${
+                          userInBoard.time / 1000
+                        } second(s)`
+                      )
+                      .setColor("RANDOM")
+                      .setFooter(
+                        `Check **#${message.channel.name}** in **${message.guild.name}** for quiz leaderboard!`
+                      )
+                      .setTimestamp();
 
-                  user.send(userEmbed);
+                    user.send(userEmbed);
+                  }
                 });
 
                 for (let lbdU = 0; lbdU < max; lbdU++) {
