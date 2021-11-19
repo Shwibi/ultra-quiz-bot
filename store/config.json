@@ -1,19 +1,21 @@
 {
-	"Bot": {
-		"prefix": "??",
-		"devs": ["700328450270953503"],
-		"invite": "https://discord.com/api/oauth2/authorize?client_id=870329762722238505&permissions=122675391568&redirect_uri=https%3A%2F%2Fwww.discord.com%2Fapp&response_type=code&scope=guilds%20applications.commands%20bot%20messages.read",
-		"reset_timer": 18000000,
-		"support": "https://discord.gg/KTtDfDKxWR"
-	},
-	"Dev": {
-		"quiz": {
-			"log_channel": "874158992040001577"
-		},
-		"todo_channel": "874158962352750632",
-		"logs_channel": "874158829468803172",
-		"prefix": "d?",
-		"time": 120,
-		"dev_logs": "874159036591923211"
-	}
+  "Bot": {
+    "prefix": "t?",
+    "devs": ["700328450270953503"],
+    "invite": "https://discord.com/api/oauth2/authorize?client_id=870329762722238505&permissions=122675391568&redirect_uri=https%3A%2F%2Fwww.discord.com%2Fapp&response_type=code&scope=guilds%20applications.commands%20bot%20messages.read",
+    "reset_timer": 18000000,
+    "support": "https://discord.gg/KTtDfDKxWR",
+    "default_question_time": 60,
+    "max_question_time": 79200
+  },
+  "Dev": {
+    "quiz": {
+      "log_channel": "911175877327470633"
+    },
+    "todo_channel": "874158962352750632",
+    "logs_channel": "874158829468803172",
+    "prefix": "t@",
+    "time": 120,
+    "dev_logs": "911175877327470633"
+  }
 }
