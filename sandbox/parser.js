@@ -28,7 +28,8 @@ const Err = shwijs.Err;
  */
 function checkReq(REQUIRED_ITEMS, content) {
   // check if all required arguments are present
-  REQUIRED_ITEMS.forEach((item) => {
+  for (let i = 0; i < REQUIRED_ITEMS.length; i++) {
+    const item = REQUIRED_ITEMS[i];
     if (!content.toLowerCase().includes(item))
       return {
         val: false,
@@ -37,7 +38,7 @@ function checkReq(REQUIRED_ITEMS, content) {
           REQUIRED_ITEMS,
         }),
       };
-  });
+  }
   return { val: true };
 }
 
@@ -45,30 +46,50 @@ function checkReq(REQUIRED_ITEMS, content) {
  * Parse a content to create a quiz!
  * @param {String} content The content to parse
  */
-function Parse(content) {
+function Parse(
+  content,
+  quiz_name,
+  callback = (err = new Err(), parsed_quiz = new Quiz()) => {}
+) {
   // Required arguments for content
-  const REQUIRED_ITEMS = [];
+  const REQUIRED_ITEMS = ["-question", "-type", "-time"];
   const check = checkReq(REQUIRED_ITEMS, content);
-  if (!check.val) return check.err;
+  if (!check.val) {
+    callback(check.err, null);
+    return;
+  }
 
+  const quiz = new Quiz(quiz_name);
   // now, split the content into different questions
   const split_into_questions = content.split(/\-question/gi);
   // console.log(split_into_questions);
   // Now run through each question and parse it
   for (let q = 0; q < split_into_questions.length; q++) {
     if (["", "\n"].includes(split_into_questions[q])) continue;
-    parseQuestion(split_into_questions[q]);
+    parseQuestion(split_into_questions[q], (err, question) => {
+      if (err) {
+        return callback(err, null);
+      }
+      quiz.addQuestion(question);
+      console.log({ question });
+    });
+    if (q == split_into_questions.length - 1) {
+      return callback(null, quiz);
+    }
   }
 }
 
 /**
  * @param {String} question
  */
-function parseQuestion(question) {
+function parseQuestion(
+  question,
+  callback = (err = new Err(), parsed_question = new Question()) => {}
+) {
   // check for required params
   const REQUIRED_PARTS = ["-type"];
   const check = checkReq(REQUIRED_PARTS, question);
-  if (!check.val) return check.err;
+  if (!check.val) return callback(check.err);
 
   // now split using -options*
   const split_by_type = question.split(/\-type/);
@@ -100,7 +121,7 @@ function parseQuestion(question) {
     case "mcq": {
       // We got mcqs! Check for options
       const check_opt = checkReq(["-options", "+o", "+c"], non_type);
-      if (!check_opt.val) return check_opt.err;
+      if (!check_opt.val) return callback(check_opt.err);
 
       // split by options
       let split_by_options = non_type.split(/\-options/gi);
@@ -123,10 +144,12 @@ function parseQuestion(question) {
         // Check if time is integer
         const timeInt = parseInt(time);
         if (!shwijs.IsInteger(timeInt))
-          return new Err("Time mentioned is not a number!", "TIME NAN", {
-            time,
-            question,
-          });
+          return callback(
+            new Err("Time mentioned is not a number!", "TIME NAN", {
+              time,
+              question,
+            })
+          );
 
         questionClass.setTime(parseInt(time));
       }
@@ -162,7 +185,7 @@ function parseQuestion(question) {
     }
     case "text": {
       const check_ans = checkReq(["-answer"], non_type);
-      if (!check_ans.val) return check_opt.err;
+      if (!check_ans.val) return callback(check_opt.err);
       // Get answer
       const answer_split = non_type
         .trim()
@@ -180,10 +203,12 @@ function parseQuestion(question) {
         // Check if time is integer
         const timeInt = parseInt(time);
         if (!shwijs.IsInteger(timeInt))
-          return new Err("Time mentioned is not a number!", "TIME NAN", {
-            time,
-            question,
-          });
+          return callback(
+            new Err("Time mentioned is not a number!", "TIME NAN", {
+              time,
+              question,
+            })
+          );
 
         questionClass.setTime(parseInt(time));
       }
@@ -194,7 +219,7 @@ function parseQuestion(question) {
     case "tf": {
       // True or false!
       const check_ans = checkReq(["-answer"], non_type);
-      if (!check_ans.val) return check_opt.err;
+      if (!check_ans.val) return callback(check_opt.err);
       // Get answer
       const answer_split = non_type
         .trim()
@@ -212,10 +237,12 @@ function parseQuestion(question) {
         // Check if time is integer
         const timeInt = parseInt(time);
         if (!shwijs.IsInteger(timeInt))
-          return new Err("Time mentioned is not a number!", "TIME NAN", {
-            time,
-            question,
-          });
+          return callback(
+            new Err("Time mentioned is not a number!", "TIME NAN", {
+              time,
+              question,
+            })
+          );
 
         questionClass.setTime(parseInt(time));
       }
@@ -245,10 +272,18 @@ function parseQuestion(question) {
     }
     default: {
       // Do nothing... lol
+      return callback(
+        new Err(
+          "Invalid type specified! Use one of these: mcq | tf | text",
+          "INVALID TYPE",
+          { type }
+        )
+      );
     }
   }
 
   console.log(JSON.stringify(questionClass, null, 2));
+  return callback(null, questionClass);
 }
 
 module.exports = { Parse };

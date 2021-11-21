@@ -12,6 +12,7 @@ class Question extends Main {
    */
   constructor(question, type) {
     super(`question`);
+    this.id = 0;
 
     this.question = question;
     this.type = type.toLowerCase();
@@ -135,6 +136,29 @@ class Quiz extends Main {
         wrong: [0, 0, 0], // question ids incorrect
       },
     ];
+
+    this.allowed_guilds = ["all"];
+  }
+
+  /**
+   * Make the quiz private to a guild (Push another guild into it)
+   * @param {String} guildId The guild to allow this into
+   */
+  setPrivate(guildId) {
+    this.allowed_guilds = this.allowed_guilds.filter((g) => g !== "all");
+    this.allowed_guilds.push(guildId);
+    return this;
+  }
+
+  /**
+   * Remove a guild from accessing it (if private)
+   * @param {String} guildId The guild to remove
+   */
+  removePrivate(guildId) {
+    this.allowed_guilds = this.allowed_guilds.filter(
+      (g) => g !== "all" && g !== guildId
+    );
+    return this;
   }
 
   /**
@@ -162,11 +186,8 @@ class Quiz extends Main {
    * @param {Question} question
    */
   addQuestion(question) {
-    const qn = this.questions.length + 1;
-    const obj = { id: qn };
-    for (key in question.question) {
-      obj[key] = question.question[key];
-    }
+    question.id = this.questions.length + 1;
+    this.questions.push(question);
     return this;
   }
 
