@@ -168,7 +168,7 @@ class Command extends Message.Event {
         } [**Support server**](${this.config.Bot.support})`,
       };
       for (const keyAd in this.config.Ad.servers) {
-        other_info.value += `\n${this.e.gift} [${keyAd}](${this.config.Ad.servers[keyAd]})`;
+        other_info.value += `\n${this.e.gift} [**${keyAd}**](${this.config.Ad.servers[keyAd]})`;
       }
       helpEmbed.addFields(other_info);
       this.help = helpEmbed;

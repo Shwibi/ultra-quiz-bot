@@ -142,7 +142,7 @@ class Command extends Message.Event {
       value: `:3`,
     };
     for (const keyAd in this.config.Ad.servers) {
-      other_info.value += `\n${this.e.gift} [${keyAd}](${this.config.Ad.servers[keyAd]})`;
+      other_info.value += `\n${this.e.gift} [**${keyAd}**](${this.config.Ad.servers[keyAd]})`;
     }
     InformationEmbed.addFields(other_info);
 
