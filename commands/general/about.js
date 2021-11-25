@@ -137,6 +137,14 @@ class Command extends Message.Event {
       `Updates (DD/MM/YYYY)`,
       UPDATES.trim().split("\n`").slice(0, 5).join("\n`")
     );
+    const other_info = {
+      name: `Events`,
+      value: `:3`,
+    };
+    for (const keyAd in this.config.Ad.servers) {
+      other_info.value += `\n${this.e.gift} [${keyAd}](${this.config.Ad.servers[keyAd]})`;
+    }
+    helpEmbed.addFields(other_info);
 
     // Send the embed :D
     message.channel.send({ embed: InformationEmbed });
