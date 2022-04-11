@@ -231,6 +231,9 @@ class Command extends Message.Event {
 			});
 	}
 
+  /**
+   * @deprecated
+   */
 	parseQuestions(
 		allQuestionsContent,
 		message,
