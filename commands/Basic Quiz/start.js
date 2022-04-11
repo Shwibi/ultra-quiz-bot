@@ -230,7 +230,7 @@ class Command extends Message.Event {
                           GBsortedByCorrect[lbgGB].time / 1000
                         } second(s)`
                       );
-                    if (lbgGB == 0 && user.avatarURL) {
+                    if (lbgGB == 0 && user.avatarURL()) {
                       guildBoardEmbed.setThumbnail(user.avatarURL());
                     }
                   }
