@@ -4,7 +4,25 @@
     "devs": ["700328450270953503"],
     "invite": "https://discord.com/api/oauth2/authorize?client_id=870329762722238505&permissions=122675391568&redirect_uri=https%3A%2F%2Fwww.discord.com%2Fapp&response_type=code&scope=guilds%20applications.commands%20bot%20messages.read",
     "reset_timer": 18000000,
-    "support": "https://discord.gg/KTtDfDKxWR"
+    "support": "https://discord.gg/KTtDfDKxWR",
+    "themes": {
+      "winter": {
+        "primary": "#eb4034",
+        "secondary": "#39ed51",
+        "faded": "#289c38",
+        "glance": "#ed2f72",
+        "complement": "#3646f7",
+        "floor": "#b7f736"
+      },
+      "gen": {
+        "primary": "#f73670",
+        "secondary": "#de36f7",
+        "faded": "#509428",
+        "glance": "#29b4ff",
+        "complement": "#ff7429",
+        "floor": "#b7f736"
+      }
+    }
   },
   "Dev": {
     "quiz": {
