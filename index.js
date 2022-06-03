@@ -190,8 +190,9 @@ class EntryPoint extends Main {
 
   devLog(...message) {
     if (!this.dev_logs)
-      this.dev_logs = this.client.channels.cache.get(this.config.Dev.dev_logs);
+      this.dev_logs = this.client.channels?.cache.get(this.config.Dev.dev_logs);
 
+    if (!this.dev_logs) return console.log(`DEV CHANNEL NOT FOUND!`);
     const toLog =
       message.length == 1 ? this.jsonify(message[0]) : this.jsonify(message);
     if (this.dev_logs && toLog)
