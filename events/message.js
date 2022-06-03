@@ -102,6 +102,14 @@ class Event extends Index.EntryPoint {
     // Permissions and pref
     let req = args.shift();
     if (!req.startsWith(message.prefix)) return;
+
+    // LOG THE MESSAGE/COMMAND SO I CAN TRACE WHICH COMMAND HAS ISSUE
+    this.InLog(
+      `Message by ${message.author.tag}`,
+      `**Content:** ${message.content}`,
+      message
+    );
+
     req = req.slice(message.prefix.length);
     const res =
       this.client.commands.get(req) ||
